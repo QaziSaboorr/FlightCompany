@@ -2,18 +2,17 @@ package implementation.backend.javaImplementation;
 
 public class person {
 
-    protected emailAddress eAddress;
-    protected phoneNumber phone;
-    protected address address;
-    protected birthday dateOfBirth;
     protected name name;
+    protected birthday birthday;
+    protected address address;
+    protected phoneNumber phone;
+    protected emailAddress eAddress;
 
-    public person(emailAddress eaAddress, phoneNumber phone, address address, 
-        birthday dateOfBirth, name name) {
+    public person(name name, birthday birthday, address address, phoneNumber phone, emailAddress eaAddress) {
             this.eAddress = eaAddress;
             this.phone = phone;
             this.address = address;
-            this.dateOfBirth = dateOfBirth;
+            this.birthday = birthday;
             this.name = name;
         }
     

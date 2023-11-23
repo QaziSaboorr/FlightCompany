@@ -1,11 +1,14 @@
 package implementation.backend.javaImplementation;
 
-public class airlineAgent {
+public class airlineAgent extends person {
 
-    public person agentPerson;
+    private person agentPerson;
+    private int employeeID;
 
-    public airlineAgent(person agentPerson) {
-        this.agentPerson = agentPerson;
+    public airlineAgent(person agent, int employeeID) {
+        agentPerson = agent;
+        this.employeeID = employeeID;
     }
+
     
 }

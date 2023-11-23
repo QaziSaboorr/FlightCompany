@@ -11,5 +11,36 @@ public class birthday {
         this.month = month;
         this.year = year;
     }
+
+    // --- GETTERS ---
+    public int getYear() {
+        return this.year;
+    }
+
+    public int getDay() {
+        return this.day;
+    }
     
+    public int getMonth() {
+        return this.month;
+    }
+
+    // --- SETTERS ---
+    public void setYear(int y) {
+        year = y;
+    }
+
+    public void setDay(int d) {
+        day = d;
+    }
+
+    public void setMonth(int m) {
+        month = m;
+    }
+
+    // --- METHODS ---
+    public void print() {
+        String output = day + "/" + month + "/" + year;
+        System.out.println(output);
+    }
 }
