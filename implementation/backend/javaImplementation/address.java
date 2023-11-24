@@ -18,7 +18,7 @@ public class address {
             this.postalCode = postalCode;
     }
 
-    // --- GETTERS ---
+    // Getters
     public int getNumber() {
         return this.number;
     }
@@ -39,7 +39,7 @@ public class address {
         return this.postalCode;
     }
 
-    // --- SETTERS ---
+    // Setters
     public void setNumber(int num) {
         number = num;
     }
@@ -60,7 +60,7 @@ public class address {
         postalCode = pc;
     }
 
-    // --- METHODS --- 
+    // Other Methods
     public void print() {
         String output = number + " " + street + " " + city + " " + country + " " + postalCode;
         Sytem.out.println(output);

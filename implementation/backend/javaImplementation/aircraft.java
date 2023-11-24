@@ -10,7 +10,7 @@ public class aircraft {
         this.number = number;
     }
 
-    // --- GETTERS ---
+    // Getters
     public String getType() {
         return this.type;
     }
@@ -19,7 +19,7 @@ public class aircraft {
         return this.number;
     }
 
-    // --- SETTERS ---
+    // Setters
     public void setType(String t) {
         type = t;
     }
@@ -28,7 +28,7 @@ public class aircraft {
         number = num;
     }
 
-    // --- METHODS ---
+    // Other Methods
     public void print() {
         String output = type + " " + number;
         System.out.println(output);

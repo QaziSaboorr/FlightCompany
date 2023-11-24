@@ -12,7 +12,7 @@ public class birthday {
         this.year = year;
     }
 
-    // --- GETTERS ---
+    // Getters
     public int getYear() {
         return this.year;
     }
@@ -25,7 +25,7 @@ public class birthday {
         return this.month;
     }
 
-    // --- SETTERS ---
+    // Setters
     public void setYear(int y) {
         year = y;
     }
@@ -38,7 +38,7 @@ public class birthday {
         month = m;
     }
 
-    // --- METHODS ---
+    // Other Methods
     public void print() {
         String output = day + "/" + month + "/" + year;
         System.out.println(output);
