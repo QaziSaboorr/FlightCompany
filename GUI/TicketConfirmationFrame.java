@@ -32,6 +32,11 @@ public class TicketConfirmationFrame extends JFrame {
         // Implement your ticket confirmation UI here
         JPanel panel = createConfirmationPanel();
         add(panel, BorderLayout.CENTER);
+
+        // Create cancel ticket button
+        JButton cancelTicketButton = new JButton("Cancel Ticket");
+        cancelTicketButton.addActionListener(e -> cancelTicket());
+        add(cancelTicketButton, BorderLayout.SOUTH);
     }
 
     private JPanel createConfirmationPanel() {
@@ -152,6 +157,27 @@ public class TicketConfirmationFrame extends JFrame {
 
         // Additional logic for ticket confirmation (e.g., sending email, updating UI)
         JOptionPane.showMessageDialog(this, "Ticket Confirmed!");
+        dispose();
+    }
+
+    
+    private void cancelTicket() {
+        try {
+            // Use the shared database connector
+            try (Connection connection = databaseConnector.getConnection()) {
+                String query = "UPDATE Tickets SET IsCancelled = TRUE, CancellationDate = NOW() WHERE UserID = ? AND FlightID = (SELECT FlightID FROM Flights WHERE FlightNumber = ? LIMIT 1)";
+                try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                    preparedStatement.setInt(1, userType.ordinal() + 1);
+                    preparedStatement.setString(2, selectedFlight);
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        // Additional logic for ticket cancellation (e.g., updating UI)
+        JOptionPane.showMessageDialog(this, "Ticket Cancelled!");
         dispose();
     }
 }
