@@ -88,9 +88,9 @@ public class TicketConfirmationFrame extends JFrame {
     private String getUserName() {
         // Implement logic to retrieve user name from the database based on user type
         try (Connection connection = databaseConnector.getConnection()) {
-            String query = "SELECT UserName FROM Users WHERE UserID = ?";
+            String query = "SELECT UserName FROM Users WHERE UserType = ? LIMIT 1";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setInt(1, userType.ordinal() + 1);
+                preparedStatement.setString(1, userType.name());
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
                         return resultSet.getString("UserName");
@@ -102,13 +102,13 @@ public class TicketConfirmationFrame extends JFrame {
         }
         return "N/A";
     }
-
+    
     private String getUserEmail() {
         // Implement logic to retrieve user email from the database based on user type
         try (Connection connection = databaseConnector.getConnection()) {
-            String query = "SELECT Email FROM Users WHERE UserID = ?";
+            String query = "SELECT Email FROM Users WHERE UserType = ? LIMIT 1";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setInt(1, userType.ordinal() + 1);
+                preparedStatement.setString(1, userType.name());
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
                         return resultSet.getString("Email");
@@ -120,6 +120,7 @@ public class TicketConfirmationFrame extends JFrame {
         }
         return "N/A";
     }
+    
 
     private void confirmTicket() {
         // Logic for confirming the ticket and updating the database
