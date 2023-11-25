@@ -1,7 +1,7 @@
-package src.systermadmin;
+
 import javax.swing.*;
 
-import src.common.DatabaseConnector;
+
 
 import java.awt.*;
 import java.awt.event.ActionEvent;

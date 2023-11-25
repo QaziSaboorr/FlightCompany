@@ -1,14 +1,6 @@
-package src.user;
+
 import javax.swing.*;
 
-import src.common.DatabaseConnector;
-import src.systermadmin.AircraftListFrame;
-import src.systermadmin.CrewListFrame;
-import src.systermadmin.FlightListFrame;
-import src.systermadmin.ManageAircraftFrame;
-import src.systermadmin.ManageCrewFrame;
-import src.systermadmin.ManageDestinationsFrame;
-import src.systermadmin.ManageFlightsFrame;
 
 
 public class SystemAdminFrame extends JFrame {

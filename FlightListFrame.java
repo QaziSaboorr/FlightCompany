@@ -1,8 +1,7 @@
-package src.systermadmin;
+
 // FlightListFrame.java
 import javax.swing.*;
 
-import src.common.DatabaseConnector;
 
 import java.awt.*;
 import java.sql.Connection;

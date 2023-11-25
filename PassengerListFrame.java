@@ -1,4 +1,4 @@
-package src.common;
+
 import javax.swing.*;
 
 import java.awt.*;

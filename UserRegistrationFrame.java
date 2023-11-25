@@ -1,8 +1,7 @@
-package src.user;
+
 import javax.swing.*;
 
-import src.common.DatabaseConnector;
-import src.common.LoginFrame;
+
 
 import java.awt.*;
 import java.awt.event.ActionEvent;

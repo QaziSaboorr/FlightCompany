@@ -1,45 +1,60 @@
-package src.user;
+
 import javax.swing.*;
 
-import src.common.DatabaseConnector;
-import src.common.PassengerListFrame;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-public class FlightAttendantFrame extends JFrame {
+
+public class FlightSelectionFrame extends JFrame {
     private JComboBox<String> flightComboBox;
-    private JButton viewPassengerListButton;
+    private JButton selectFlightButton;
+    private JButton showPassengerListButton;  // New button for showing passenger list
+    private UserType userType;
     private DatabaseConnector databaseConnector;
 
-    public FlightAttendantFrame(DatabaseConnector databaseConnector) {
+    public FlightSelectionFrame(UserType userType, DatabaseConnector databaseConnector) {
+        this.userType = userType;
         this.databaseConnector = databaseConnector;
 
-        setTitle("Flight Reservation - Flight Attendant");
+        setTitle("Flight Reservation - Flight Selection");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(400, 150);
         setLocationRelativeTo(null);
 
         flightComboBox = new JComboBox<>();
-        viewPassengerListButton = new JButton("View Passenger List");
+        selectFlightButton = new JButton("Select Flight");
+        showPassengerListButton = new JButton("Show Passenger List");  // Initialize the button
 
         setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 
-        add(new JLabel("Welcome, Flight Attendant!"));
+        add(new JLabel("Welcome, " + userType.name() + "!"));
         add(new JLabel("Select Flight:"));
         add(flightComboBox);
-        add(viewPassengerListButton);
+        add(selectFlightButton);
+
+        // Add the button only if the user is an airline agent or flight attendant
+        if (userType == UserType.AirlineAgent) {
+            add(showPassengerListButton);
+            showPassengerListButton.addActionListener(e -> openPassengerListFrame());
+        }
 
         loadFlights();
 
-        viewPassengerListButton.addActionListener(e -> {
+        selectFlightButton.addActionListener(e -> {
             String selectedFlightInfo = (String) flightComboBox.getSelectedItem();
             String selectedFlightNumber = extractFlightNumber(selectedFlightInfo);
 
-            // Open the PassengerListFrame for the selected flight
-            new PassengerListFrame(selectedFlightNumber, databaseConnector).setVisible(true);
+            new SeatSelectionFrame(selectedFlightNumber, userType, databaseConnector).setVisible(true);
+            this.dispose();
         });
+
+        // Show passenger list button
+        if (userType == UserType.AirlineAgent || userType == UserType.FlightAttendant) {
+            add(showPassengerListButton);
+            showPassengerListButton.addActionListener(e -> openPassengerListFrame());
+        }
 
         setVisible(true);
     }
@@ -70,5 +85,9 @@ public class FlightAttendantFrame extends JFrame {
         }
     }
 
-
+    private void openPassengerListFrame() {
+        String selectedFlightInfo = (String) flightComboBox.getSelectedItem();
+        String selectedFlightNumber = extractFlightNumber(selectedFlightInfo);
+        new PassengerListFrame(selectedFlightNumber, databaseConnector).setVisible(true);
+    }
 }

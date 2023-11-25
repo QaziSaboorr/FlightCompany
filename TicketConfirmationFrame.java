@@ -1,8 +1,6 @@
-package src;
+
 import javax.swing.*;
 
-import src.common.DatabaseConnector;
-import src.user.UserType;
 
 import java.awt.*;
 import java.sql.Connection;

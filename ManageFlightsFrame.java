@@ -1,8 +1,7 @@
-package src.systermadmin;
+
 // ManageFlightsFrame.java
 import javax.swing.*;
 
-import src.common.DatabaseConnector;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;

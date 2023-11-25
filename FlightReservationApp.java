@@ -1,8 +1,6 @@
-package src;
+
 import javax.swing.*;
 
-import src.common.DatabaseConnector;
-import src.common.LoginFrame;
 
 public class FlightReservationApp {
     public static void main(String[] args) {

@@ -1,10 +1,7 @@
-package src.common;
+
 import javax.swing.*;
 
-import src.user.FlightAttendantFrame;
-import src.user.SystemAdminFrame;
-import src.user.UserRegistrationFrame;
-import src.user.UserType;
+
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
