@@ -7,34 +7,40 @@ public class person {
     protected address address;
     protected phoneNumber phone;
     protected emailAddress eAddress;
+    protected int personID;
 
-    public person(name name, birthday birthday, address address, phoneNumber phone, emailAddress eaAddress) {
+    public person(name name, birthday birthday, address address, phoneNumber phone, emailAddress eaAddress, int personID) {
         this.eAddress = eaAddress;
         this.phone = phone;
         this.address = address;
         this.birthday = birthday;
         this.name = name;
+        this.personID = personID;
     }
 
     // Getters
     public name getName() {
-        return name;
+        return this.name;
     }
 
     public birthday getBirthday() {
-        return birthday;
+        return this.birthday;
     }
 
     public address getAddress() {
-        return address;
+        return this.address;
     }
 
     public phoneNumber getPhone() {
-        return phone;
+        return this.phone;
     }
 
     public emailAddress getEAddress() {
-        return eAddress;
+        return this.eAddress;
+    }
+
+    public int getPersonID() {
+        return this.personID;
     }
 
     // Setters
@@ -56,5 +62,9 @@ public class person {
 
     public void setEAddress(emailAddress eAddress) {
         this.eAddress = eAddress;
+    }
+
+    public void setPersonID(int id) {
+        this.personID = id;
     }
 }

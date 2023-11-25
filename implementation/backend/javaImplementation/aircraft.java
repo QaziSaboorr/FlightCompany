@@ -21,11 +21,11 @@ public class aircraft {
 
     // Setters
     public void setType(String t) {
-        type = t;
+        this.type = t;
     }
 
     public void setNumber(int num) {
-        number = num;
+        this.number = num;
     }
 
     // Other Methods

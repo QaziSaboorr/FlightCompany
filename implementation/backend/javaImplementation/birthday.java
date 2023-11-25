@@ -27,15 +27,15 @@ public class birthday {
 
     // Setters
     public void setYear(int y) {
-        year = y;
+        this.year = y;
     }
 
     public void setDay(int d) {
-        day = d;
+        this.day = d;
     }
 
     public void setMonth(int m) {
-        month = m;
+       this.month = m;
     }
 
     // Other Methods

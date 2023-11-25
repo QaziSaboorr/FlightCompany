@@ -1,14 +1,33 @@
 package implementation.backend.javaImplementation;
 
-public class airlineAgent extends person {
+public class airlineAgent extends user {
 
-    private person agentPerson;
-    private int employeeID;
+    private user agentUser;
+    private String password;
 
-    public airlineAgent(person agent, int employeeID) {
-        super(agent.getName(), agent.getBirthday(), agent.getAddress(), agent.getPhone(), agent.getEAddress());
-        agentPerson = agent;
-        this.employeeID = employeeID;
+    public airlineAgent(user agent, String password) {
+        super(agent.getName(), agent.getBirthday(), agent.getAddress(), 
+            agent.getPhone(), agent.getEAddress(), agent.gePersonID());
+        agentUser= agent;
+        this.password = password;
+    }
+
+    // Getters
+    public user getAgentUser() {
+        return this.agentUser;
+    }
+
+    public String getPassword() {
+        return this.password;
+    }
+
+    // Setters
+    public void setUser(user u) {
+        this.agentUser = u;
+    }
+
+    public void setPassword(String p) {
+        this.password = p;
     }
 
     

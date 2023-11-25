@@ -41,23 +41,23 @@ public class address {
 
     // Setters
     public void setNumber(int num) {
-        number = num;
+        this.number = num;
     }
 
     public void setStreet(String s) {
-        street = s;
+        this.street = s;
     }
 
     public void setCity(String c) {
-        city = c;
+        this.city = c;
     }
 
     public void setCountry(String c) {
-        country = c;
+        this.country = c;
     }
 
     public void setPostalCode(String pc) {
-        postalCode = pc;
+        this.postalCode = pc;
     }
 
     // Other Methods
