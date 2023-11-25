@@ -17,4 +17,11 @@ public class address {
             this.country = country;
             this.postalCode = postalCode;
     }
+
+    public boolean isValid() {
+        return false;
+    }
+
+    public void sendEmail(ticket ticket, receipt receipt) {
+    }
 }

@@ -11,5 +11,9 @@ public class creditCard {
         this.ccv = ccv;
         this.expiryDate = expiryDate;
     }
+
+    public boolean isValid() {
+        return false;
+    }
     
 }
