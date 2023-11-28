@@ -128,17 +128,30 @@ public class ManageFlightsFrame extends JFrame {
             // Get the AircraftID for the selected aircraft number
             int aircraftID = getAircraftID(connection, aircraftNumber);
     
+            // Check if the flight already exists
+            if (flightExists(connection, flightNumber)) {
+                JOptionPane.showMessageDialog(this, "Flight with the given flight number already exists.");
+                return;
+            }
+    
             // Insert the flight information into the Flights table with a JOIN to get DestinationName
             String query = "INSERT INTO Flights (FlightNumber, Origin, Destination, AircraftID) " +
-                           "SELECT ?, ?, Destinations.DestinationName, ? " +
-                           "FROM Destinations " +
-                           "WHERE Destinations.DestinationID = ?";
+                    "SELECT ?, ?, Destinations.DestinationName, ? " +
+                    "FROM Destinations " +
+                    "WHERE Destinations.DestinationID = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, flightNumber);
                 preparedStatement.setString(2, origin);
                 preparedStatement.setInt(3, aircraftID);
                 preparedStatement.setInt(4, getDestinationID(connection, destination));
                 preparedStatement.executeUpdate();
+    
+                // Get the FlightID for the newly added flight
+                int newFlightID = getFlightID(connection, flightNumber);
+    
+                // Add seats for the new flight
+                addSeatsForFlight(connection, newFlightID);
+    
                 JOptionPane.showMessageDialog(this, "Flight added successfully.");
                 flightNumberField.setText(""); // Clear the input fields after adding
                 originField.setText("");
@@ -148,6 +161,32 @@ public class ManageFlightsFrame extends JFrame {
             JOptionPane.showMessageDialog(this, "Error adding flight.");
         }
     }
+    
+    // Function to check if a flight with the given flight number already exists
+    private boolean flightExists(Connection connection, String flightNumber) throws SQLException {
+        String query = "SELECT FlightID FROM Flights WHERE FlightNumber = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, flightNumber);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next(); // Returns true if a matching flight is found
+            }
+        }
+    }
+    
+    // Function to get the FlightID for a given flight number
+    private int getFlightID(Connection connection, String flightNumber) throws SQLException {
+        String query = "SELECT FlightID FROM Flights WHERE FlightNumber = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, flightNumber);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("FlightID");
+                }
+            }
+        }
+        return -1; // Return -1 if FlightID is not found (should not happen in a well-formed database)
+    }
+    
     
 
     // Function to get the DestinationID for a given destination name
@@ -199,4 +238,16 @@ public class ManageFlightsFrame extends JFrame {
         }
     }
     
+    // Function to add seats for a given flight
+    private void addSeatsForFlight(Connection connection, int flightID) throws SQLException {
+        // Use the existing pattern of seats for the new flight
+        String seatPatternQuery = "INSERT INTO Seats (FlightID, SeatNumber, SeatType, SeatPrice) " +
+                "SELECT ?, SeatNumber, SeatType, SeatPrice " +
+                "FROM Seats WHERE FlightID = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(seatPatternQuery)) {
+            preparedStatement.setInt(1, flightID);
+            preparedStatement.setInt(2, flightID - 1); // Use the last flight's ID as a reference
+            preparedStatement.executeUpdate();
+        }
+    }
 }

@@ -15,11 +15,13 @@ public class SeatSelectionFrame extends JFrame {
     private String selectedFlight;
     private UserType userType;
     private DatabaseConnector databaseConnector;
+    private String selectedSeat; // Add this variable
 
     public SeatSelectionFrame(String selectedFlight, UserType userType, DatabaseConnector databaseConnector) {
         this.selectedFlight = selectedFlight;
         this.userType = userType;
         this.databaseConnector = databaseConnector;
+        this.selectedSeat = null;
 
         setTitle("Flight Reservation - Seat Selection");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -121,7 +123,7 @@ public class SeatSelectionFrame extends JFrame {
                 JOptionPane.YES_NO_OPTION);
     
         boolean insuranceSelected = (option == JOptionPane.YES_OPTION);
-    
+        this.selectedSeat = seatNumber;
         // Open TicketConfirmationFrame with relevant information
         new TicketConfirmationFrame(userType, selectedFlight, seatNumber, seatType, seatPrice, insuranceSelected, databaseConnector).setVisible(true);
     
@@ -129,7 +131,9 @@ public class SeatSelectionFrame extends JFrame {
         this.dispose();
     }
     
-
+    public String getSelectedSeat() {
+        return selectedSeat;
+    }
 
     private double calculateTicketPrice(String seatType) {
         // Add your pricing logic based on seat type
