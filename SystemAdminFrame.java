@@ -83,7 +83,7 @@ public class SystemAdminFrame extends JFrame {
 
     private void printUsersList() {
         // Open a frame or perform actions to print the list of users
-        // ...
+        new UserListFrame(databaseConnector).setVisible(true);
     }
 
  

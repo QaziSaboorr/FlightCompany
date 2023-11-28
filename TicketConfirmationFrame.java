@@ -71,9 +71,10 @@ public class TicketConfirmationFrame extends JFrame {
         panel.add(new JLabel("User Name: " + userName));
         panel.add(new JLabel("Email: " + userEmail));
 
-        JButton confirmTicketButton = new JButton("Confirm Ticket");
-        confirmTicketButton.addActionListener(e -> confirmTicket());
-        panel.add(confirmTicketButton);
+        // Remove Confirm Ticket button
+        JButton proceedToPaymentButton = new JButton("Proceed to Payment");
+        proceedToPaymentButton.addActionListener(e -> proceedToPayment());
+        panel.add(proceedToPaymentButton);
 
         return panel;
     }
@@ -94,11 +95,9 @@ public class TicketConfirmationFrame extends JFrame {
     }
 
     private String getUserName() {
-        // Implement logic to retrieve user name from the database based on user type
         try (Connection connection = databaseConnector.getConnection()) {
-            String query = "SELECT UserName FROM Users WHERE UserType = ? LIMIT 1";
+            String query = "SELECT UserName FROM Users ORDER BY UserID DESC LIMIT 1";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setString(1, userType.name());
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
                         return resultSet.getString("UserName");
@@ -112,11 +111,9 @@ public class TicketConfirmationFrame extends JFrame {
     }
     
     private String getUserEmail() {
-        // Implement logic to retrieve user email from the database based on user type
         try (Connection connection = databaseConnector.getConnection()) {
-            String query = "SELECT Email FROM Users WHERE UserType = ? LIMIT 1";
+            String query = "SELECT Email FROM Users ORDER BY UserID DESC LIMIT 1";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setString(1, userType.name());
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
                         return resultSet.getString("Email");
@@ -129,8 +126,9 @@ public class TicketConfirmationFrame extends JFrame {
         return "N/A";
     }
     
+    
 
-    private void confirmTicket() {
+    public void confirmTicket() {
         // Logic for confirming the ticket and updating the database
         try {
             // Use the shared database connector
@@ -183,4 +181,13 @@ public class TicketConfirmationFrame extends JFrame {
         JOptionPane.showMessageDialog(this, "Ticket Cancelled!");
         dispose();
     }
+
+
+    private void proceedToPayment() {
+        // Open the payment frame
+        PaymentFrame paymentFrame = new PaymentFrame(this, selectedFlight, seatNumber, seatPrice);
+        paymentFrame.setVisible(true);
+        dispose(); // Close the current frame
+    }
+
 }

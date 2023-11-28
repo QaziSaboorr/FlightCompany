@@ -1,7 +1,6 @@
 
 import javax.swing.*;
 
-
 public class FlightReservationApp {
     public static void main(String[] args) {
         // Ensure the MySQL JDBC driver is loaded
@@ -13,8 +12,8 @@ public class FlightReservationApp {
             return;
         }
 
-        // Create a DatabaseConnector object to handle database connectivity
-        DatabaseConnector databaseConnector = new DatabaseConnector();
+        // Create a DatabaseConnector singleton instance
+        DatabaseConnector databaseConnector = DatabaseConnector.getInstance();
 
         // Pass the database connector to the LoginFrame
         SwingUtilities.invokeLater(() -> new LoginFrame(databaseConnector).setVisible(true));

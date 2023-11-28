@@ -77,7 +77,14 @@ public class LoginFrame extends JFrame {
             if (option == JOptionPane.YES_OPTION) {
                 openUserRegistrationFrame();
             } else {
-                openFlightSelectionFrame(selectedUserType, username, null);
+                // If not registering, ask for email and add the user to the Users table
+                String email = JOptionPane.showInputDialog(this, "Please enter your email:");
+                if (email != null && !email.isEmpty()) {
+                    addUserToDatabase(username, email);
+                    openFlightSelectionFrame(selectedUserType, username, passwordString);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Email is required.");
+                }
             }
         } else {
             if (authenticateUser(selectedUserType, username, passwordString)) {
@@ -94,6 +101,20 @@ public class LoginFrame extends JFrame {
         }
     }
 
+    private void addUserToDatabase(String username, String email) {
+        String query = "INSERT INTO Users (UserName, Email, UserType) VALUES (?, ?, ?)";
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, username);
+            preparedStatement.setString(2, email);
+            preparedStatement.setString(3, UserType.Unregistered.name()); // Set UserType to Unregistered
+
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
     private boolean authenticateUser(UserType userType, String username, String password) {
         // Implement user authentication logic here (query the database, etc.)
         // For simplicity, compare with the fake data
@@ -125,21 +146,79 @@ public class LoginFrame extends JFrame {
 
         return false;
     }
-
     private void openFlightSelectionFrame(UserType userType, String username, String password) {
         if (userType == UserType.FlightAttendant) {
             FlightAttendantFrame flightAttendantFrame = new FlightAttendantFrame(databaseConnector);
             flightAttendantFrame.setVisible(true);
         } else if (userType == UserType.SystemAdmin) {
-            SystemAdminFrame SystemAdminFrame = new SystemAdminFrame(databaseConnector);
-            SystemAdminFrame.setVisible(true);
+            SystemAdminFrame systemAdminFrame = new SystemAdminFrame(databaseConnector);
+            systemAdminFrame.setVisible(true);
         } else {
-            FlightSelectionFrame flightSelectionFrame = new FlightSelectionFrame(userType, databaseConnector);
-            flightSelectionFrame.setVisible(true);
+            // Check if the user has a ticket
+            boolean hasTicket = checkUserHasTicket(username);
+    
+            if (hasTicket) {
+                // Display the user's ticket
+                displayUserTicket(username);
+    
+                // Add a button to cancel the ticket
+                JButton cancelTicketButton = new JButton("Cancel Ticket");
+                cancelTicketButton.addActionListener(e -> cancelTicket(username));
+                add(cancelTicketButton);
+            } else {
+                // If the user does not have a ticket, proceed to flight selection
+                FlightSelectionFrame flightSelectionFrame = new FlightSelectionFrame(userType, databaseConnector);
+                flightSelectionFrame.setVisible(true);
+            }
         }
         this.dispose();
     }
+    
+    private boolean checkUserHasTicket(String username) {
+        String query = "SELECT * FROM Tickets WHERE UserName = ?";
+    
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, username);
+    
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next(); // Returns true if the user has a ticket
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    
+        return false;
+    }
+    
+    private void displayUserTicket(String username) {
+        // Implement the logic to display the user's ticket based on their UserType
+        // For example, fetch and display relevant information from the Tickets table
+        // You can use a JOptionPane or create a new JFrame for displaying the ticket details
+        // This could include information such as flight details, seat, price, etc.
+        // You can reuse some of the logic from the TicketConfirmationFrame class for displaying ticket details.
+        // Note: This is a simplified example, and you might need to adjust it based on your database schema and requirements.
+    }
+    
+    private void cancelTicket(String username) {
+        // Implement the logic to cancel the user's ticket by removing the corresponding row from the Tickets table
+        String query = "DELETE FROM Tickets WHERE UserName = ?";
+    
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, username);
+            preparedStatement.executeUpdate();
+    
+            JOptionPane.showMessageDialog(this, "Ticket Cancelled!");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    
+        // Additional logic for ticket cancellation (e.g., updating UI)
+        // You may need to refresh the UI or close the current frame, depending on your application flow.
+    }
 
+    
     private void openUserRegistrationFrame() {
         UserRegistrationFrame registrationFrame = new UserRegistrationFrame(databaseConnector, this);
         registrationFrame.setVisible(true);
@@ -152,7 +231,7 @@ public class LoginFrame extends JFrame {
             boolean isMember = getMembershipStatus(username);
             if (!isMember) {
                 int option = JOptionPane.showConfirmDialog(this,
-                        "Would you like to become a member of Vortex Airlines?", "Membership",
+                        "Would you like to become a member of Vortex Airlines Rewards Program?", "Membership",
                         JOptionPane.YES_NO_OPTION);
 
                 if (option == JOptionPane.YES_OPTION) {
@@ -167,7 +246,7 @@ public class LoginFrame extends JFrame {
         boolean hasCompanyCreditCard = getCompanyCreditCardStatus(username);
         if (!hasCompanyCreditCard) {
             int option = JOptionPane.showConfirmDialog(this,
-                    "Would you like to apply for a company credit card?", "Credit Card",
+                    "Would you like to apply for a Vortex Airlines credit card?", "Credit Card",
                     JOptionPane.YES_NO_OPTION);
 
             if (option == JOptionPane.YES_OPTION) {
@@ -182,7 +261,7 @@ public class LoginFrame extends JFrame {
             boolean hasRedeemedCompanionTicket = getCompanionTicketRedemptionStatus(username);
             if (!hasRedeemedCompanionTicket) {
                 int option = JOptionPane.showConfirmDialog(this,
-                        "Would you like to redeem your free companion ticket?", "Companion Ticket",
+                        "Would you like to redeem your 1 free companion ticket?", "Companion Ticket",
                         JOptionPane.YES_NO_OPTION);
 
                 if (option == JOptionPane.YES_OPTION) {

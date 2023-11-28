@@ -61,7 +61,7 @@ public class FlightSelectionFrame extends JFrame {
 
     private void loadFlights() {
         try (Connection connection = databaseConnector.getConnection()) {
-            String query = "SELECT FlightNumber, Origin, Destination FROM Flights";
+            String query = "SELECT FlightNumber, Origin, Destination FROM Flights WHERE FlightNumber IS NOT NULL";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {

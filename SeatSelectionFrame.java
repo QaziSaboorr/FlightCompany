@@ -8,6 +8,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SeatSelectionFrame extends JFrame {
     private String selectedFlight;
@@ -46,26 +48,53 @@ public class SeatSelectionFrame extends JFrame {
                         if (flightIdResult.next()) {
                             int flightId = flightIdResult.getInt("FlightID");
 
-                            // Query to get seats based on the flight ID
-                            String seatsQuery = "SELECT * FROM Seats WHERE FlightID = ?";
-                            try (PreparedStatement seatsStatement = connection.prepareStatement(seatsQuery)) {
-                                seatsStatement.setInt(1, flightId);
+                            // Query to get booked seats based on the flight ID
+                            String bookedSeatsQuery = "SELECT SeatNumber FROM Tickets WHERE FlightID = ?";
+                            try (PreparedStatement bookedSeatsStatement = connection.prepareStatement(bookedSeatsQuery)) {
+                                bookedSeatsStatement.setInt(1, flightId);
 
-                                try (ResultSet resultSet = seatsStatement.executeQuery()) {
-                                    while (resultSet.next()) {
-                                        String seatNumber = resultSet.getString("SeatNumber");
-                                        String seatType = resultSet.getString("SeatType");
-                                        double seatPrice = calculateTicketPrice(seatType);
+                                try (ResultSet bookedSeatsResult = bookedSeatsStatement.executeQuery()) {
+                                    // Create a set to store booked seat numbers
+                                    Set<String> bookedSeatNumbers = new HashSet<>();
+                                    while (bookedSeatsResult.next()) {
+                                        bookedSeatNumbers.add(bookedSeatsResult.getString("SeatNumber"));
+                                    }
 
-                                        // Create seat labels or buttons dynamically based on seat information
-                                        JButton seatButton = new JButton("Seat " + seatNumber + " (" + seatType + ") - $" + seatPrice);
-                                        seatButton.addActionListener(e -> {
-                                            // Handle seat selection (e.g., confirm ticket)
-                                            handleSeatSelection(selectedFlight, seatNumber, seatType, seatPrice);
-                                        });
-                                        seatSelectionPanel.add(seatButton);
+                                    // Query to get seats based on the flight ID
+                                    String seatsQuery = "SELECT * FROM Seats WHERE FlightID = ?";
+                                    try (PreparedStatement seatsStatement = connection.prepareStatement(seatsQuery)) {
+                                        seatsStatement.setInt(1, flightId);
 
-                                        System.out.println("Added seat: " + seatNumber + " (" + seatType + ")");
+                                        try (ResultSet resultSet = seatsStatement.executeQuery()) {
+                                            while (resultSet.next()) {
+                                                String seatNumber = resultSet.getString("SeatNumber");
+                                                String seatType = resultSet.getString("SeatType");
+                                                double seatPrice = calculateTicketPrice(seatType);
+
+                                                // Create seat labels or buttons dynamically based on seat information
+                                                JButton seatButton = new JButton("Seat " + seatNumber + " (" + seatType + ") - $" + seatPrice);
+
+                                                // Check if the seat is booked
+                                                if (bookedSeatNumbers.contains(seatNumber)) {
+                                                    seatButton.setEnabled(false); // Disable the button
+                                                    seatButton.setBackground(Color.RED); // Set a different color
+                                                    seatButton.addActionListener(e -> {
+                                                        // Inform the user that the seat is already booked
+                                                        JOptionPane.showMessageDialog(this, "Sorry, this seat is already booked.");
+                                                    });
+                                                } else {
+                                                    // Seat is available, add regular action
+                                                    seatButton.addActionListener(e -> {
+                                                        // Handle seat selection (e.g., confirm ticket)
+                                                        handleSeatSelection(selectedFlight, seatNumber, seatType, seatPrice);
+                                                    });
+                                                }
+
+                                                seatSelectionPanel.add(seatButton);
+
+                                                System.out.println("Added seat: " + seatNumber + " (" + seatType + ")");
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -83,7 +112,6 @@ public class SeatSelectionFrame extends JFrame {
         System.out.println("Seat selection panel created.");
         return seatSelectionPanel;
     }
-    // Existing code...
 
     private void handleSeatSelection(String selectedFlight, String seatNumber, String seatType, double seatPrice) {
         // Prompt user for ticket cancellation insurance

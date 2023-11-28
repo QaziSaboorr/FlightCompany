@@ -17,6 +17,7 @@ public class ManageFlightsFrame extends JFrame {
     private JComboBox<String> destinationComboBox;
     private JComboBox<String> aircraftComboBox;
     private JButton addButton;
+    private JButton removeButton;
     private DatabaseConnector databaseConnector;
 
     public ManageFlightsFrame(DatabaseConnector databaseConnector) {
@@ -33,6 +34,7 @@ public class ManageFlightsFrame extends JFrame {
         destinationComboBox = new JComboBox<>();
         aircraftComboBox = new JComboBox<>();
         addButton = new JButton("Add Flight");
+        removeButton = new JButton("Remove Flight");
 
         // Load destination names and aircraft numbers into the combo boxes
         loadDestinationNames();
@@ -51,6 +53,8 @@ public class ManageFlightsFrame extends JFrame {
         add(aircraftComboBox);
         add(new JLabel());
         add(addButton);
+        add(new JLabel());
+        add(removeButton);
 
         // Add action listener for the "Add Flight" button
         addButton.addActionListener(new ActionListener() {
@@ -59,6 +63,20 @@ public class ManageFlightsFrame extends JFrame {
                 addFlight();
             }
         });
+
+        // Add action listener for the "Remove Flight" button
+        removeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String flightNumberToRemove = JOptionPane.showInputDialog("Enter Flight Number to Remove:");
+                if (flightNumberToRemove != null && !flightNumberToRemove.isEmpty()) {
+                    removeFlight(flightNumberToRemove);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Please enter a valid flight number.");
+                }
+            }
+        });
+
     }
 
     // Function to load destination names into the combo box
@@ -95,32 +113,31 @@ public class ManageFlightsFrame extends JFrame {
         }
     }
 
-    // Function to add a new flight to the database
     private void addFlight() {
         String flightNumber = flightNumberField.getText();
         String origin = originField.getText();
         String destination = (String) destinationComboBox.getSelectedItem();
         String aircraftNumber = (String) aircraftComboBox.getSelectedItem();
-
+    
         if (flightNumber.isEmpty() || origin.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please enter flight number and origin.");
             return;
         }
-
+    
         try (Connection connection = databaseConnector.getConnection()) {
-            // Get the DestinationID for the selected destination
-            int destinationID = getDestinationID(connection, destination);
-
             // Get the AircraftID for the selected aircraft number
             int aircraftID = getAircraftID(connection, aircraftNumber);
-
-            // Insert the flight information into the Flights table
-            String query = "INSERT INTO Flights (FlightNumber, Origin, Destination, AircraftID) VALUES (?, ?, ?, ?)";
+    
+            // Insert the flight information into the Flights table with a JOIN to get DestinationName
+            String query = "INSERT INTO Flights (FlightNumber, Origin, Destination, AircraftID) " +
+                           "SELECT ?, ?, Destinations.DestinationName, ? " +
+                           "FROM Destinations " +
+                           "WHERE Destinations.DestinationID = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, flightNumber);
                 preparedStatement.setString(2, origin);
-                preparedStatement.setInt(3, destinationID);
-                preparedStatement.setInt(4, aircraftID);
+                preparedStatement.setInt(3, aircraftID);
+                preparedStatement.setInt(4, getDestinationID(connection, destination));
                 preparedStatement.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Flight added successfully.");
                 flightNumberField.setText(""); // Clear the input fields after adding
@@ -131,6 +148,7 @@ public class ManageFlightsFrame extends JFrame {
             JOptionPane.showMessageDialog(this, "Error adding flight.");
         }
     }
+    
 
     // Function to get the DestinationID for a given destination name
     private int getDestinationID(Connection connection, String destinationName) throws SQLException {
@@ -159,4 +177,26 @@ public class ManageFlightsFrame extends JFrame {
         }
         return -1; // Return -1 if AircraftID is not found (should not happen in a well-formed database)
     }
+
+
+    private void removeFlight(String flightNumber) {
+        try (Connection connection = databaseConnector.getConnection()) {
+            // Delete the flight information from the Flights table
+            String query = "DELETE FROM Flights WHERE FlightNumber = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, flightNumber);
+                int rowsDeleted = preparedStatement.executeUpdate();
+    
+                if (rowsDeleted > 0) {
+                    JOptionPane.showMessageDialog(this, "Flight removed successfully.");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Flight not found with the given flight number.");
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error removing flight.");
+        }
+    }
+    
 }

@@ -1,19 +1,17 @@
-
 import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class UserListFrame extends JFrame {
     private JList<String> userList;
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/airlinedb";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "Password25";
+    private DatabaseConnector databaseConnector;
 
-    public UserListFrame() {
+    public UserListFrame(DatabaseConnector databaseConnector) {
+        this.databaseConnector = databaseConnector;
+
         setTitle("Flight Reservation - User List");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(600, 400);
@@ -35,29 +33,31 @@ public class UserListFrame extends JFrame {
         add(scrollPane, BorderLayout.CENTER);
     }
 
-    // Function to load users from the database
+    // Function to load registered users from the database
     private void loadUsers() {
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            String query = "SELECT UserName, Email, UserType, Address FROM Users";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                DefaultListModel<String> listModel = (DefaultListModel<String>) userList.getModel();
+        try (Connection connection = databaseConnector.getConnection()) {
+            String query = "SELECT UserName, Email, UserType, Address FROM Users WHERE UserType = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                // Set the UserType parameter to "Registered"
+                preparedStatement.setString(1, UserType.Registered.name());
 
-                while (resultSet.next()) {
-                    String userInfo = "Username: " + resultSet.getString("UserName") +
-                                      ", Email: " + resultSet.getString("Email") +
-                                      ", UserType: " + resultSet.getString("UserType") +
-                                      ", Address: " + resultSet.getString("Address");
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    DefaultListModel<String> listModel = (DefaultListModel<String>) userList.getModel();
 
-                    listModel.addElement(userInfo);
+                    while (resultSet.next()) {
+                        String userInfo = "Username: " + resultSet.getString("UserName") +
+                                ", Email: " + resultSet.getString("Email") +
+                                ", UserType: " + resultSet.getString("UserType") +
+                                ", Address: " + resultSet.getString("Address");
+
+                        listModel.addElement(userInfo);
+                    }
                 }
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error loading registered users from the database.");
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new UserListFrame().setVisible(true));
-    }
 }
