@@ -60,7 +60,9 @@ public class TicketConfirmationFrame extends JFrame {
             panel.add(new JLabel("Price: Free (Companion Ticket)"));
             panel.add(new JLabel("Insurance: Free (Companion Ticket)"));
         } else {
-            panel.add(new JLabel("Price: $" + seatPrice));
+            // Use the updated seatPrice for display
+            double displayPrice = insuranceSelected ? seatPrice + 20.0 : seatPrice;
+            panel.add(new JLabel("Price: $" + displayPrice));
             panel.add(new JLabel("Insurance Selected: " + (insuranceSelected ? "Yes" : "No")));
         }
     
@@ -90,7 +92,15 @@ public class TicketConfirmationFrame extends JFrame {
 
     public boolean checkCompanionTicketUsage() {
         try (Connection connection = databaseConnector.getConnection()) {
-            String query = "SELECT HasRedeemedCompanionTicket FROM Users WHERE UserID = ?";
+            String query;
+            if (getUserType() == UserType.Registered) {
+                // Check for companion ticket redemption for registered users
+                query = "SELECT HasRedeemedCompanionTicket FROM Users WHERE UserID = ?";
+            } else {
+                // Unregistered users shouldn't have a companion ticket
+                return false;
+            }
+    
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, userType.ordinal() + 1);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -102,7 +112,7 @@ public class TicketConfirmationFrame extends JFrame {
         }
         return false;
     }
-
+    
     private String getUserName() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT UserName FROM Users ORDER BY UserID DESC LIMIT 1";
@@ -188,7 +198,7 @@ public class TicketConfirmationFrame extends JFrame {
     
                     // Retrieve the auto-generated ticket ID
                     try (ResultSet generatedKeys = ticketPreparedStatement.getGeneratedKeys()) {
-                        if (generatedKeys.next()) {
+                        if (generatedKeys.next()) { 
                             int ticketID = generatedKeys.getInt(1);
     
                             // Insert data into the Passengers table
