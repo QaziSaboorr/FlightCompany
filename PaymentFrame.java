@@ -17,12 +17,13 @@ class PaymentFrame extends JFrame {
     private String seatNumber;
     private double seatPrice;
     private String userEmail; // Add this variable
+    private double totalPrice;
 
     public PaymentFrame(TicketConfirmationFrame ticketConfirmationFrame, String selectedFlight, String seatNumber, double seatPrice, String userEmail) {
         this.ticketConfirmationFrame = ticketConfirmationFrame;
         this.selectedFlight = selectedFlight;
         this.seatNumber = seatNumber;
-        this.seatPrice = seatPrice;
+        this.totalPrice = seatPrice;
         this.userEmail = userEmail; // Set the user email
 
         setTitle("Flight Reservation - Payment");

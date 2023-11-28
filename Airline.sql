@@ -129,6 +129,16 @@ INSERT INTO Aircrafts (AircraftNumber) VALUES
 -- Display the contents of the Aircrafts table
 SELECT * FROM airlinedb.Aircrafts;
 
+
+-- Inserting additional fake data into the Flights table
+INSERT INTO Flights (FlightNumber, Origin, Destination, AircraftID) VALUES
+    ('AC222', 'Vancouver', 'Edmonton', 1),
+    ('AC333', 'Calgary', 'Ottawa', 2),
+    ('AC555', 'Ottawa', 'Winnipeg', 1),
+    ('AC777', 'Quebec City', 'Halifax', 3),
+    ('AC999', 'Winnipeg', 'Montreal', 2);
+
+
 -- Insert fake data into the Crews table (total crews for each flight)
 INSERT INTO Crews (Name, FlightID) VALUES
     ('Sky Explorers', 1),   
@@ -249,13 +259,6 @@ INSERT INTO Seats (FlightID, SeatNumber, SeatType, SeatPrice) VALUES
 SELECT * FROM airlinedb.seats;
 
 
--- Inserting additional fake data into the Flights table
-INSERT INTO Flights (FlightNumber, Origin, Destination, AircraftID) VALUES
-    ('AC222', 'Vancouver', 'Edmonton', 1),
-    ('AC333', 'Calgary', 'Ottawa', 2),
-    ('AC555', 'Ottawa', 'Winnipeg', 1),
-    ('AC777', 'Quebec City', 'Halifax', 3),
-    ('AC999', 'Winnipeg', 'Montreal', 2);
 
 
 SELECT * FROM airlinedb.flights;
