@@ -2,7 +2,6 @@
 // ManageFlightsFrame.java
 import javax.swing.*;
 
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,7 +36,7 @@ public class ManageFlightsFrame extends JFrame {
         removeButton = new JButton("Remove Flight");
 
         // Load destination names and aircraft numbers into the combo boxes
-        loadDestinationNames();
+        loadList();
         loadAircraftNumbers();
 
         // Create the form layout
@@ -80,7 +79,7 @@ public class ManageFlightsFrame extends JFrame {
     }
 
     // Function to load destination names into the combo box
-    private void loadDestinationNames() {
+    public void loadList() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT DestinationName FROM Destinations";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query);
