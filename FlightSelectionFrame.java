@@ -1,6 +1,6 @@
 
-import javax.swing.*;
 
+import javax.swing.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,9 +14,13 @@ public class FlightSelectionFrame extends JFrame {
     private UserType userType;
     private DatabaseConnector databaseConnector;
 
+    private FlightSelectionController flightSelectionController;
+
     public FlightSelectionFrame(UserType userType, DatabaseConnector databaseConnector) {
         this.userType = userType;
         this.databaseConnector = databaseConnector;
+
+        flightSelectionController = new FlightSelectionController(databaseConnector);
 
         setTitle("Flight Reservation - Flight Selection");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

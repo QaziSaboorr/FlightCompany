@@ -1,12 +1,9 @@
-
 import javax.swing.*;
-
-
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 
 public class LoginFrame extends JFrame {
     private JComboBox<UserType> userTypeComboBox;
@@ -17,9 +14,12 @@ public class LoginFrame extends JFrame {
     private JButton loginButton;
     private DatabaseConnector databaseConnector;
 
+    private DatabaseController databaseController;
 
     public LoginFrame(DatabaseConnector databaseConnector) {
         this.databaseConnector = databaseConnector;
+
+        databaseController = new DatabaseController(databaseConnector);
 
         setTitle("Flight Reservation - Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -80,14 +80,14 @@ public class LoginFrame extends JFrame {
                 // If not registering, ask for email and add the user to the Users table
                 String email = JOptionPane.showInputDialog(this, "Please enter your email:");
                 if (email != null && !email.isEmpty()) {
-                    addUserToDatabase(username, email);
+                    databaseController.addUserToDatabase(username, email);
                     openFlightSelectionFrame(selectedUserType, username, passwordString);
                 } else {
                     JOptionPane.showMessageDialog(this, "Email is required.");
                 }
             }
         } else {
-            if (authenticateUser(selectedUserType, username, passwordString)) {
+            if (databaseController.authenticateUser(selectedUserType, username, passwordString)) {
                 // Check and prompt for membership, credit card, and companion ticket
                 checkMemberAttributes(selectedUserType, username);
                 checkCreditCard(selectedUserType, username);
@@ -101,51 +101,7 @@ public class LoginFrame extends JFrame {
         }
     }
 
-    private void addUserToDatabase(String username, String email) {
-        String query = "INSERT INTO Users (UserName, Email, UserType) VALUES (?, ?, ?)";
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, username);
-            preparedStatement.setString(2, email);
-            preparedStatement.setString(3, UserType.Unregistered.name()); // Set UserType to Unregistered
 
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    private boolean authenticateUser(UserType userType, String username, String password) {
-        // Implement user authentication logic here (query the database, etc.)
-        // For simplicity, compare with the fake data
-        switch (userType) {
-            case Registered:
-            case AirlineAgent:
-            case SystemAdmin:
-            case FlightAttendant:
-                return checkCredentials(username, password);
-            default:
-                return false;
-        }
-    }
-
-    private boolean checkCredentials(String username, String password) {
-        String query = "SELECT * FROM Users WHERE UserName = ? AND Password = ?";
-
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, username);
-            preparedStatement.setString(2, password);
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                return resultSet.next(); // Returns true if a matching user is found
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return false;
-    }
     private void openFlightSelectionFrame(UserType userType, String username, String password) {
         if (userType == UserType.FlightAttendant) {
             FlightAttendantFrame flightAttendantFrame = new FlightAttendantFrame(databaseConnector);
@@ -167,7 +123,7 @@ public class LoginFrame extends JFrame {
         
         else {
             // Check if the user has a ticket
-            boolean hasTicket = checkUserHasTicket(username);
+            boolean hasTicket = databaseController.checkUserHasTicket(username);
     
             if (hasTicket) {
                 // Display the user's ticket
@@ -175,7 +131,7 @@ public class LoginFrame extends JFrame {
     
                 // Add a button to cancel the ticket
                 JButton cancelTicketButton = new JButton("Cancel Ticket");
-                cancelTicketButton.addActionListener(e -> cancelTicket(username));
+                cancelTicketButton.addActionListener(e -> databaseController.cancelTicket(username));
                 add(cancelTicketButton);
             } else {
                 // If the user does not have a ticket, proceed to flight selection
@@ -186,23 +142,7 @@ public class LoginFrame extends JFrame {
         this.dispose();
     }
     
-    private boolean checkUserHasTicket(String username) {
-        String query = "SELECT * FROM Tickets WHERE UserName = ?";
-    
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, username);
-    
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                return resultSet.next(); // Returns true if the user has a ticket
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    
-        return false;
-    }
-    
+
     private void displayUserTicket(String username) {
         // Implement the logic to display the user's ticket based on their UserType
         // For example, fetch and display relevant information from the Tickets table
@@ -211,25 +151,6 @@ public class LoginFrame extends JFrame {
         // You can reuse some of the logic from the TicketConfirmationFrame class for displaying ticket details.
         // Note: This is a simplified example, and you might need to adjust it based on your database schema and requirements.
     }
-    
-    private void cancelTicket(String username) {
-        // Implement the logic to cancel the user's ticket by removing the corresponding row from the Tickets table
-        String query = "DELETE FROM Tickets WHERE UserName = ?";
-    
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, username);
-            preparedStatement.executeUpdate();
-    
-            JOptionPane.showMessageDialog(this, "Ticket Cancelled!");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    
-        // Additional logic for ticket cancellation (e.g., updating UI)
-        // You may need to refresh the UI or close the current frame, depending on your application flow.
-    }
-
     
     private void openUserRegistrationFrame() {
         UserRegistrationFrame registrationFrame = new UserRegistrationFrame(databaseConnector, this);
@@ -240,14 +161,14 @@ public class LoginFrame extends JFrame {
     private void checkMemberAttributes(UserType userType, String username) {
         if (userType == UserType.Registered) {
             // Check membership attributes and prompt if needed
-            boolean isMember = getMembershipStatus(username);
+            boolean isMember = databaseController.getMembershipStatus(username);
             if (!isMember) {
                 int option = JOptionPane.showConfirmDialog(this,
                         "Would you like to become a member of Vortex Airlines Rewards Program?", "Membership",
                         JOptionPane.YES_NO_OPTION);
 
                 if (option == JOptionPane.YES_OPTION) {
-                    updateMembershipStatus(username, true);
+                    databaseController.updateMembershipStatus(username, true);
                 }
             }
         }
@@ -255,14 +176,14 @@ public class LoginFrame extends JFrame {
 
     private void checkCreditCard(UserType userType, String username) {
         // Check credit card status and prompt if needed
-        boolean hasCompanyCreditCard = getCompanyCreditCardStatus(username);
+        boolean hasCompanyCreditCard = databaseController.getCompanyCreditCardStatus(username);
         if (!hasCompanyCreditCard) {
             int option = JOptionPane.showConfirmDialog(this,
                     "Would you like to apply for a Vortex Airlines credit card?", "Credit Card",
                     JOptionPane.YES_NO_OPTION);
 
             if (option == JOptionPane.YES_OPTION) {
-                updateCreditCardStatus(username, true);
+                UserUtils.updateCreditCardStatus(databaseConnector, username, true);
             }
         }
     }
@@ -270,116 +191,19 @@ public class LoginFrame extends JFrame {
     private void checkRedeemedCompanionTicket(UserType userType, String username) {
         if (userType == UserType.Registered) {
             // Check companion ticket status and prompt if needed
-            boolean hasRedeemedCompanionTicket = getCompanionTicketRedemptionStatus(username);
+            boolean hasRedeemedCompanionTicket = databaseController.getCompanionTicketRedemptionStatus(username);
             if (!hasRedeemedCompanionTicket) {
                 int option = JOptionPane.showConfirmDialog(this,
                         "Would you like to redeem your 1 free companion ticket?", "Companion Ticket",
                         JOptionPane.YES_NO_OPTION);
 
                 if (option == JOptionPane.YES_OPTION) {
-                    updateCompanionTicketRedemptionStatus(username, true);
+                    databaseController.updateCompanionTicketRedemptionStatus(username, true);
                 }
             }
         }
     }
-    private boolean getMembershipStatus(String username) {
-        String query = "SELECT IsMember FROM Users WHERE UserName = ?";
 
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, username);
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getBoolean("IsMember");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return false; // Default value
-    }
-
-    private void updateMembershipStatus(String username, boolean isMember) {
-        String query = "UPDATE Users SET IsMember = ? WHERE UserName = ?";
-
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setBoolean(1, isMember);
-            preparedStatement.setString(2, username);
-
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private boolean getCompanyCreditCardStatus(String username) {
-        String query = "SELECT HasCompanyCreditCard FROM Users WHERE UserName = ?";
-
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, username);
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getBoolean("HasCompanyCreditCard");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return false; // Default value
-    }
-
-    private void updateCreditCardStatus(String username, boolean hasCompanyCreditCard) {
-        String query = "UPDATE Users SET HasCompanyCreditCard = ? WHERE UserName = ?";
-
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setBoolean(1, hasCompanyCreditCard);
-            preparedStatement.setString(2, username);
-
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private boolean getCompanionTicketRedemptionStatus(String username) {
-        String query = "SELECT HasRedeemedCompanionTicket FROM Users WHERE UserName = ?";
-
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, username);
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getBoolean("HasRedeemedCompanionTicket");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return false; // Default value
-    }
-
-    private void updateCompanionTicketRedemptionStatus(String username, boolean hasRedeemedCompanionTicket) {
-        String query = "UPDATE Users SET HasRedeemedCompanionTicket = ? WHERE UserName = ?";
-
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setBoolean(1, hasRedeemedCompanionTicket);
-            preparedStatement.setString(2, username);
-
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
     public void setUserType(UserType userType) {
         userTypeComboBox.setSelectedItem(userType);
     }

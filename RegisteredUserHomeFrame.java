@@ -1,6 +1,7 @@
 
 
 import javax.swing.*;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
@@ -12,9 +13,15 @@ public class RegisteredUserHomeFrame extends JFrame {
     private DatabaseConnector databaseConnector;
     private String username;
 
+    private DatabaseController userDatabaseController;
+    private FlightSelectionController flightSelectionController;
+
     public RegisteredUserHomeFrame(DatabaseConnector databaseConnector, String username) {
         this.databaseConnector = databaseConnector;
         this.username = username;
+
+        userDatabaseController = new DatabaseController(databaseConnector);
+        flightSelectionController = new FlightSelectionController(databaseConnector);
 
 
         setTitle("Flight Reservation - Registered User");

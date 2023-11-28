@@ -3,9 +3,11 @@ import javax.swing.*;
 
 public class UserHomeFrame extends JFrame {
     private DatabaseConnector databaseConnector;
+    private FlightSelectionController flightSelectionController;
 
     public UserHomeFrame(DatabaseConnector databaseConnector) {
         this.databaseConnector = databaseConnector;
+        flightSelectionController = new FlightSelectionController(databaseConnector);
 
         setTitle("Flight Reservation - User");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

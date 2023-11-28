@@ -2,7 +2,6 @@
 // AircraftListFrame.java
 import javax.swing.*;
 
-
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,8 +12,12 @@ public class AircraftListFrame extends JFrame {
     private JTextArea aircraftListArea;
     private DatabaseConnector databaseConnector;
 
+    private DatabaseController databaseController;
+
     public AircraftListFrame(DatabaseConnector databaseConnector) {
         this.databaseConnector = databaseConnector;
+
+        databaseController = new DatabaseController(databaseConnector);
 
         setTitle("Flight Reservation - Aircraft List");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
