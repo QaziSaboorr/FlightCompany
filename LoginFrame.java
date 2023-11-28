@@ -73,7 +73,10 @@ public class LoginFrame extends JFrame {
                     "Register", JOptionPane.YES_NO_OPTION);
 
             if (option == JOptionPane.YES_OPTION) {
-                openUserRegistrationFrame();
+                // openUserRegistrationFrame();
+                UserRegistrationFrame registrationFrame = new UserRegistrationFrame(databaseConnector, this);
+                registrationFrame.setVisible(true);
+                this.dispose();
             } else {
                 // If not registering, ask for email and add the user to the Users table
                 String email = JOptionPane.showInputDialog(this, "Please enter your email:");
@@ -226,6 +229,9 @@ public class LoginFrame extends JFrame {
             }
         }
     }
+
+
+    
 
     public void setUserType(UserType userType) {
         userTypeComboBox.setSelectedItem(userType);

@@ -1,29 +1,23 @@
-
-
 import javax.swing.*;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 
-public class FlightSelectionFrame extends JFrame implements ListLoader{
+public class FlightSelectionFrame extends JFrame implements ListLoader {
     private JComboBox<String> flightComboBox;
     private JButton selectFlightButton;
-    private JButton showPassengerListButton;
+    private JButton showPassengerListButton;  // New button for showing passenger list
     private UserType userType;
     private DatabaseConnector databaseConnector;
 
-    private FlightSelectionController flightSelectionController;
-
-    private ItemLoader itemLoader;
+    private FlightController flightController;
 
     public FlightSelectionFrame(UserType userType, DatabaseConnector databaseConnector) {
         this.userType = userType;
         this.databaseConnector = databaseConnector;
 
-        flightSelectionController = new FlightSelectionController(databaseConnector);
+        flightController = new FlightController(databaseConnector);
 
         setTitle("Flight Reservation - Flight Selection");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -47,21 +41,11 @@ public class FlightSelectionFrame extends JFrame implements ListLoader{
             showPassengerListButton.addActionListener(e -> openPassengerListFrame());
         }
 
-        // loadList();
-
-        // selectFlightButton.addActionListener(e -> {
-        //     String selectedFlightInfo = (String) flightComboBox.getSelectedItem();
-        //     String selectedFlightNumber = extractFlightNumber(selectedFlightInfo);
-
-        //     new SeatSelectionFrame(selectedFlightNumber, userType, databaseConnector).setVisible(true);
-        //     this.dispose();
-        // });
-
         loadList();
 
         selectFlightButton.addActionListener(e -> {
             String selectedFlightInfo = (String) flightComboBox.getSelectedItem();
-            String selectedFlightNumber = extractFlightNumber(selectedFlightInfo);
+            String selectedFlightNumber = flightController.extractFlightNumber(selectedFlightInfo);
 
             new SeatSelectionFrame(selectedFlightNumber, userType, databaseConnector).setVisible(true);
             this.dispose();
@@ -76,35 +60,28 @@ public class FlightSelectionFrame extends JFrame implements ListLoader{
         setVisible(true);
     }
 
-
     @Override
     public void loadList() {
-        List<Item> flightList = itemLoader.loadFlights();
-        displayItems(flightList);
-    }
-
-
-    public void displayItems(List<Item> items) {
-        for (Item item : items) {
-            flightComboBox.addItem(item.getText());
+        try (Connection connection = databaseConnector.getConnection()) {
+            String query = "SELECT FlightNumber, Origin, Destination FROM Flights WHERE FlightNumber IS NOT NULL";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    String flightInfo = resultSet.getString("FlightNumber") + " - " +
+                            resultSet.getString("Origin") + " to " +
+                            resultSet.getString("Destination");
+                    flightComboBox.addItem(flightInfo);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
     }
 
-    private String extractFlightNumber(String flightInfo) {
-        int endIndex = flightInfo.indexOf(" -");
-        if (endIndex != -1) {
-            return flightInfo.substring(0, endIndex);
-        } else {
-            return flightInfo;
-        }
-    }
 
     private void openPassengerListFrame() {
         String selectedFlightInfo = (String) flightComboBox.getSelectedItem();
-        String selectedFlightNumber = extractFlightNumber(selectedFlightInfo);
+        String selectedFlightNumber = flightController.extractFlightNumber(selectedFlightInfo);
         new PassengerListFrame(selectedFlightNumber, databaseConnector).setVisible(true);
     }
 }
-
-
-

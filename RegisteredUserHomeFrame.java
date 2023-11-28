@@ -34,7 +34,7 @@ public class RegisteredUserHomeFrame extends JFrame {
         add(applyForCreditCard);
         add(checkPromotions);
 
-        flightSelectionButton.addActionListener(e -> userController.selectFlight());
+        flightSelectionButton.addActionListener(e -> selectFlight(UserType.Registered));
         cancelFlightButton.addActionListener(e -> cancelFlight());
         applyForCreditCard.addActionListener(e -> applyForCreditCard());
         checkPromotions.addActionListener(e -> checkPromotions());
@@ -42,6 +42,9 @@ public class RegisteredUserHomeFrame extends JFrame {
         setVisible(true);
     }
 
+    private void selectFlight(UserType userType) {
+        userController.selectFlight(UserType.Registered);
+    }
 
     private void applyForCreditCard() {
         userController.updateCreditCardStatus(databaseConnector, username, true);   

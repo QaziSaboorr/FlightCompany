@@ -20,7 +20,7 @@ public class UserHomeFrame extends JFrame {
 
         add(flightSelectionButton);
 
-        flightSelectionButton.addActionListener(e -> userController.selectFlight());
+        flightSelectionButton.addActionListener(e -> userController.selectFlight(UserType.Unregistered));
 
 
         setVisible(true);

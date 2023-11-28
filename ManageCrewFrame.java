@@ -12,7 +12,7 @@ import java.sql.SQLException;
 
 
 
-public class ManageCrewFrame extends JFrame {
+public class ManageCrewFrame extends JFrame implements ListLoader{
     private JTextField crewNameField;
     private JComboBox<String> flightComboBox;
     private JButton addButton;
@@ -40,7 +40,7 @@ public class ManageCrewFrame extends JFrame {
 
         // Load flight numbers and crews into the combo boxes
         loadList();
-        loadCrewsAndFlights();
+        loadList();
 
         // Create the form layout
         setLayout(new GridLayout(5, 2));
@@ -96,6 +96,7 @@ public class ManageCrewFrame extends JFrame {
     }   
 
     // Function to load flight numbers into the combo box
+    @Override
     public void loadList() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT FlightNumber FROM Flights";
@@ -155,14 +156,13 @@ public class ManageCrewFrame extends JFrame {
                 crewNameField.setText(""); // Clear the input field after adding
                 // Reload the crews and flights into the dropdown for an updated view
                 crewDropdown.removeAllItems();
-                loadCrewsAndFlights();
+                loadList();
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error adding crew.");
         }
     }
-
 
     // Function to load crews and their associated flights into the dropdown menu
     private void loadCrewsAndFlights() {
