@@ -218,7 +218,7 @@ public class LoginFrame extends JFrame {
         // You may need to refresh the UI or close the current frame, depending on your application flow.
     }
 
-    
+
     private void openUserRegistrationFrame() {
         UserRegistrationFrame registrationFrame = new UserRegistrationFrame(databaseConnector, this);
         registrationFrame.setVisible(true);
@@ -242,6 +242,11 @@ public class LoginFrame extends JFrame {
     }
 
     private void checkCreditCard(UserType userType, String username) {
+        // Exclude the prompt for company credit card for specific user types
+        if (userType == UserType.SystemAdmin || userType == UserType.FlightAttendant || userType == UserType.AirlineAgent) {
+            return;
+        }
+
         // Check credit card status and prompt if needed
         boolean hasCompanyCreditCard = getCompanyCreditCardStatus(username);
         if (!hasCompanyCreditCard) {
@@ -254,6 +259,7 @@ public class LoginFrame extends JFrame {
             }
         }
     }
+
 
     private void checkRedeemedCompanionTicket(UserType userType, String username) {
         if (userType == UserType.Registered) {
@@ -270,6 +276,7 @@ public class LoginFrame extends JFrame {
             }
         }
     }
+    
     private boolean getMembershipStatus(String username) {
         String query = "SELECT IsMember FROM Users WHERE UserName = ?";
 

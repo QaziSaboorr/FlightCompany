@@ -127,7 +127,8 @@ public class ManageFlightsFrame extends JFrame {
         try (Connection connection = databaseConnector.getConnection()) {
             // Get the AircraftID for the selected aircraft number
             int aircraftID = getAircraftID(connection, aircraftNumber);
-    
+            
+
             // Check if the flight already exists
             if (flightExists(connection, flightNumber)) {
                 JOptionPane.showMessageDialog(this, "Flight with the given flight number already exists.");
@@ -238,16 +239,22 @@ public class ManageFlightsFrame extends JFrame {
         }
     }
     
-    // Function to add seats for a given flight
     private void addSeatsForFlight(Connection connection, int flightID) throws SQLException {
-        // Use the existing pattern of seats for the new flight
-        String seatPatternQuery = "INSERT INTO Seats (FlightID, SeatNumber, SeatType, SeatPrice) " +
-                "SELECT ?, SeatNumber, SeatType, SeatPrice " +
-                "FROM Seats WHERE FlightID = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(seatPatternQuery)) {
-            preparedStatement.setInt(1, flightID);
-            preparedStatement.setInt(2, flightID - 1); // Use the last flight's ID as a reference
-            preparedStatement.executeUpdate();
+        // Define the seat data
+        String[] seatNumbers = {"A1", "A2", "A3", "A4", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4", "D1", "D2", "D3", "D4"};
+        String[] seatTypes = {"Business-Class", "Business-Class", "Business-Class", "Business-Class", "Business-Class", "Business-Class", "Business-Class", "Business-Class", "Regular", "Regular", "Regular", "Regular", "Regular", "Regular", "Regular", "Regular"};
+        double[] seatPrices = {200.00, 200.00, 200.00, 200.00, 200.00, 200.00, 200.00, 200.00, 100.00, 100.00, 100.00, 100.00, 100.00, 100.00, 100.00, 100.00};
+
+        // Insert seat data into the Seats table for the given flightID
+        String query = "INSERT INTO Seats (FlightID, SeatNumber, SeatType, SeatPrice) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            for (int i = 0; i < seatNumbers.length; i++) {
+                preparedStatement.setInt(1, flightID);
+                preparedStatement.setString(2, seatNumbers[i]);
+                preparedStatement.setString(3, seatTypes[i]);
+                preparedStatement.setDouble(4, seatPrices[i]);
+                preparedStatement.executeUpdate();
+            }
         }
     }
 }
