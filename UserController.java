@@ -69,11 +69,9 @@ public class UserController {
         }
     }
 
-    public void selectFlight() {
-        // Open the FlightSelectionFrame
-        FlightSelectionFrame flightSelectionFrame = new FlightSelectionFrame(UserType.Unregistered, databaseConnector);
+    public void selectFlight(UserType usertype) {
+        FlightSelectionFrame flightSelectionFrame = new FlightSelectionFrame(usertype, databaseConnector);
         flightSelectionFrame.setVisible(true);
-
     }
 
 }

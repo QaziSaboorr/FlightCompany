@@ -1,8 +1,7 @@
 import javax.swing.*;
-import java.awt.*;
 import java.util.List;
 
-public class FlightAttendantFrame extends JFrame implements ListLoader{
+public class FlightAttendantFrame extends JFrame implements ListLoader, Printer {
     private JComboBox<String> flightComboBox;
     private JButton viewPassengerListButton;
 
@@ -45,6 +44,7 @@ public class FlightAttendantFrame extends JFrame implements ListLoader{
         displayItems(flightList);
     }
 
+    @Override
     public void displayItems(List<Item> items) {
         for (Item item : items) {
             flightComboBox.addItem(item.getText());

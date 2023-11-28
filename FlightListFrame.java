@@ -2,7 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
-public class FlightListFrame extends JFrame implements ListLoader {
+public class FlightListFrame extends JFrame implements ListLoader, Printer {
     private JTextArea itemListArea;
     private ItemLoader itemLoader;
 
@@ -37,6 +37,7 @@ public class FlightListFrame extends JFrame implements ListLoader {
         displayItems(flightList);
     }
 
+    @Override
     public void displayItems(List<Item> items) {
         StringBuilder itemText = new StringBuilder();
         for (Item item : items) {

@@ -73,7 +73,10 @@ public class LoginFrame extends JFrame {
                     "Register", JOptionPane.YES_NO_OPTION);
 
             if (option == JOptionPane.YES_OPTION) {
-                openUserRegistrationFrame();
+                // openUserRegistrationFrame();
+                UserRegistrationFrame registrationFrame = new UserRegistrationFrame(databaseConnector, this);
+                registrationFrame.setVisible(true);
+                this.dispose();
             } else {
                 // If not registering, ask for email and add the user to the Users table
                 String email = JOptionPane.showInputDialog(this, "Please enter your email:");
@@ -141,21 +144,6 @@ public class LoginFrame extends JFrame {
     }
     
 
-    private void displayUserTicket(String username) {
-        // Implement the logic to display the user's ticket based on their UserType
-        // For example, fetch and display relevant information from the Tickets table
-        // You can use a JOptionPane or create a new JFrame for displaying the ticket details
-        // This could include information such as flight details, seat, price, etc.
-        // You can reuse some of the logic from the TicketConfirmationFrame class for displaying ticket details.
-        // Note: This is a simplified example, and you might need to adjust it based on your database schema and requirements.
-    }
-    
-    private void openUserRegistrationFrame() {
-        UserRegistrationFrame registrationFrame = new UserRegistrationFrame(databaseConnector, this);
-        registrationFrame.setVisible(true);
-        this.dispose();
-    }
-
     private void checkMemberAttributes(UserType userType, String username) {
         if (userType == UserType.Registered) {
             // Check membership attributes and prompt if needed
@@ -201,6 +189,16 @@ public class LoginFrame extends JFrame {
             }
         }
     }
+
+    private void displayUserTicket(String username) {
+        // Implement the logic to display the user's ticket based on their UserType
+        // For example, fetch and display relevant information from the Tickets table
+        // You can use a JOptionPane or create a new JFrame for displaying the ticket details
+        // This could include information such as flight details, seat, price, etc.
+        // You can reuse some of the logic from the TicketConfirmationFrame class for displaying ticket details.
+        // Note: This is a simplified example, and you might need to adjust it based on your database schema and requirements.
+    }
+    
 
     public void setUserType(UserType userType) {
         userTypeComboBox.setSelectedItem(userType);
