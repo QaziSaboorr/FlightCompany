@@ -11,9 +11,13 @@ public class FlightSelectionFrame extends JFrame implements ListLoader {
     private UserType userType;
     private DatabaseConnector databaseConnector;
 
+    private FlightController flightController;
+
     public FlightSelectionFrame(UserType userType, DatabaseConnector databaseConnector) {
         this.userType = userType;
         this.databaseConnector = databaseConnector;
+
+        flightController = new FlightController(databaseConnector);
 
         setTitle("Flight Reservation - Flight Selection");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -41,7 +45,7 @@ public class FlightSelectionFrame extends JFrame implements ListLoader {
 
         selectFlightButton.addActionListener(e -> {
             String selectedFlightInfo = (String) flightComboBox.getSelectedItem();
-            String selectedFlightNumber = extractFlightNumber(selectedFlightInfo);
+            String selectedFlightNumber = flightController.extractFlightNumber(selectedFlightInfo);
 
             new SeatSelectionFrame(selectedFlightNumber, userType, databaseConnector).setVisible(true);
             this.dispose();
@@ -74,18 +78,10 @@ public class FlightSelectionFrame extends JFrame implements ListLoader {
         }
     }
 
-    private String extractFlightNumber(String flightInfo) {
-        int endIndex = flightInfo.indexOf(" -");
-        if (endIndex != -1) {
-            return flightInfo.substring(0, endIndex);
-        } else {
-            return flightInfo;
-        }
-    }
 
     private void openPassengerListFrame() {
         String selectedFlightInfo = (String) flightComboBox.getSelectedItem();
-        String selectedFlightNumber = extractFlightNumber(selectedFlightInfo);
+        String selectedFlightNumber = flightController.extractFlightNumber(selectedFlightInfo);
         new PassengerListFrame(selectedFlightNumber, databaseConnector).setVisible(true);
     }
 }

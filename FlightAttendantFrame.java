@@ -6,9 +6,12 @@ public class FlightAttendantFrame extends JFrame implements ListLoader, Printer 
     private JButton viewPassengerListButton;
 
     private ItemLoader itemLoader;
+    private FlightController flightController;
 
     public FlightAttendantFrame(DatabaseConnector databaseConnector) {
         this.itemLoader = new ItemLoader(databaseConnector);
+
+        flightController = new FlightController(databaseConnector);
 
         setTitle("Flight Reservation - Flight Attendant");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -29,7 +32,7 @@ public class FlightAttendantFrame extends JFrame implements ListLoader, Printer 
 
         viewPassengerListButton.addActionListener(e -> {
             String selectedFlightInfo = (String) flightComboBox.getSelectedItem();
-            String selectedFlightNumber = extractFlightNumber(selectedFlightInfo);
+            String selectedFlightNumber = flightController.extractFlightNumber(selectedFlightInfo);
 
             // Open the PassengerListFrame for the selected flight
             new PassengerListFrame(selectedFlightNumber, databaseConnector).setVisible(true);
@@ -48,15 +51,6 @@ public class FlightAttendantFrame extends JFrame implements ListLoader, Printer 
     public void displayItems(List<Item> items) {
         for (Item item : items) {
             flightComboBox.addItem(item.getText());
-        }
-    }
-
-    private String extractFlightNumber(String flightInfo) {
-        int endIndex = flightInfo.indexOf(" -");
-        if (endIndex != -1) {
-            return flightInfo.substring(0, endIndex);
-        } else {
-            return flightInfo;
         }
     }
 }

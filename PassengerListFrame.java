@@ -1,20 +1,27 @@
-
 import javax.swing.*;
-
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class PassengerListFrame extends JFrame implements ListLoader{
+// Interface for classes that load and display lists
+interface ListLoader {
+    void loadList();
+}
+
+public class PassengerListFrame extends JFrame implements ListLoader {
     private JTextArea passengerListArea;
     private DatabaseConnector databaseConnector;
     private String selectedFlight;
+    private List<Passenger> passengerList;
 
     public PassengerListFrame(String selectedFlight, DatabaseConnector databaseConnector) {
         this.databaseConnector = databaseConnector;
         this.selectedFlight = selectedFlight;
+        this.passengerList = new ArrayList<>();
 
         setTitle("Flight Reservation - Passenger List");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
