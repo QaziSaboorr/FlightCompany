@@ -1,8 +1,5 @@
 import javax.swing.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
 
 
 public class LoginFrame extends JFrame {
@@ -14,12 +11,13 @@ public class LoginFrame extends JFrame {
     private JButton loginButton;
     private DatabaseConnector databaseConnector;
 
-    private DatabaseController databaseController;
+    private LoginController loginController;
+
 
     public LoginFrame(DatabaseConnector databaseConnector) {
         this.databaseConnector = databaseConnector;
 
-        databaseController = new DatabaseController(databaseConnector);
+        loginController = new LoginController(databaseConnector);
 
         setTitle("Flight Reservation - Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -80,14 +78,14 @@ public class LoginFrame extends JFrame {
                 // If not registering, ask for email and add the user to the Users table
                 String email = JOptionPane.showInputDialog(this, "Please enter your email:");
                 if (email != null && !email.isEmpty()) {
-                    databaseController.addUserToDatabase(username, email);
+                    loginController.addUserToDatabase(username, email);
                     openFlightSelectionFrame(selectedUserType, username, passwordString);
                 } else {
                     JOptionPane.showMessageDialog(this, "Email is required.");
                 }
             }
         } else {
-            if (databaseController.authenticateUser(selectedUserType, username, passwordString)) {
+            if (loginController.authenticateUser(selectedUserType, username, passwordString)) {
                 // Check and prompt for membership, credit card, and companion ticket
                 checkMemberAttributes(selectedUserType, username);
                 checkCreditCard(selectedUserType, username);
@@ -123,7 +121,7 @@ public class LoginFrame extends JFrame {
         
         else {
             // Check if the user has a ticket
-            boolean hasTicket = databaseController.checkUserHasTicket(username);
+            boolean hasTicket = loginController.checkUserHasTicket(username);
     
             if (hasTicket) {
                 // Display the user's ticket
@@ -131,7 +129,7 @@ public class LoginFrame extends JFrame {
     
                 // Add a button to cancel the ticket
                 JButton cancelTicketButton = new JButton("Cancel Ticket");
-                cancelTicketButton.addActionListener(e -> databaseController.cancelTicket(username));
+                cancelTicketButton.addActionListener(e -> loginController.cancelTicket(username));
                 add(cancelTicketButton);
             } else {
                 // If the user does not have a ticket, proceed to flight selection
@@ -161,14 +159,14 @@ public class LoginFrame extends JFrame {
     private void checkMemberAttributes(UserType userType, String username) {
         if (userType == UserType.Registered) {
             // Check membership attributes and prompt if needed
-            boolean isMember = databaseController.getMembershipStatus(username);
+            boolean isMember = loginController.getMembershipStatus(username);
             if (!isMember) {
                 int option = JOptionPane.showConfirmDialog(this,
                         "Would you like to become a member of Vortex Airlines Rewards Program?", "Membership",
                         JOptionPane.YES_NO_OPTION);
 
                 if (option == JOptionPane.YES_OPTION) {
-                    databaseController.updateMembershipStatus(username, true);
+                    loginController.updateMembershipStatus(username, true);
                 }
             }
         }
@@ -176,14 +174,14 @@ public class LoginFrame extends JFrame {
 
     private void checkCreditCard(UserType userType, String username) {
         // Check credit card status and prompt if needed
-        boolean hasCompanyCreditCard = databaseController.getCompanyCreditCardStatus(username);
+        boolean hasCompanyCreditCard = loginController.getCompanyCreditCardStatus(username);
         if (!hasCompanyCreditCard) {
             int option = JOptionPane.showConfirmDialog(this,
                     "Would you like to apply for a Vortex Airlines credit card?", "Credit Card",
                     JOptionPane.YES_NO_OPTION);
 
             if (option == JOptionPane.YES_OPTION) {
-                UserUtils.updateCreditCardStatus(databaseConnector, username, true);
+                UserController.updateCreditCardStatus(databaseConnector, username, true);
             }
         }
     }
@@ -191,14 +189,14 @@ public class LoginFrame extends JFrame {
     private void checkRedeemedCompanionTicket(UserType userType, String username) {
         if (userType == UserType.Registered) {
             // Check companion ticket status and prompt if needed
-            boolean hasRedeemedCompanionTicket = databaseController.getCompanionTicketRedemptionStatus(username);
+            boolean hasRedeemedCompanionTicket = loginController.getCompanionTicketRedemptionStatus(username);
             if (!hasRedeemedCompanionTicket) {
                 int option = JOptionPane.showConfirmDialog(this,
                         "Would you like to redeem your 1 free companion ticket?", "Companion Ticket",
                         JOptionPane.YES_NO_OPTION);
 
                 if (option == JOptionPane.YES_OPTION) {
-                    databaseController.updateCompanionTicketRedemptionStatus(username, true);
+                    loginController.updateCompanionTicketRedemptionStatus(username, true);
                 }
             }
         }

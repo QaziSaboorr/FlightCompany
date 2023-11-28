@@ -1,27 +1,19 @@
 
 
 import javax.swing.*;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.List;
 
 public class RegisteredUserHomeFrame extends JFrame {
     private DatabaseConnector databaseConnector;
     private String username;
 
-    private DatabaseController userDatabaseController;
-    private FlightSelectionController flightSelectionController;
+    private UserController userController;
 
     public RegisteredUserHomeFrame(DatabaseConnector databaseConnector, String username) {
         this.databaseConnector = databaseConnector;
         this.username = username;
 
-        userDatabaseController = new DatabaseController(databaseConnector);
-        flightSelectionController = new FlightSelectionController(databaseConnector);
+        userController = new UserController(databaseConnector);
 
 
         setTitle("Flight Reservation - Registered User");
@@ -34,19 +26,16 @@ public class RegisteredUserHomeFrame extends JFrame {
 
         JButton flightSelectionButton = new JButton("Select Flights");
         JButton cancelFlightButton = new JButton("Cancel Flight");
-        JButton accessLoungeButton = new JButton("Access Lounge");
         JButton applyForCreditCard = new JButton("Apply for Credit Card");
         JButton checkPromotions = new JButton("Check Promotions");
 
         add(flightSelectionButton);
         add(cancelFlightButton);
-        add(accessLoungeButton);
         add(applyForCreditCard);
         add(checkPromotions);
 
-        flightSelectionButton.addActionListener(e -> selectFlight());
+        flightSelectionButton.addActionListener(e -> userController.selectFlight());
         cancelFlightButton.addActionListener(e -> cancelFlight());
-        accessLoungeButton.addActionListener(e -> accessLounge());
         applyForCreditCard.addActionListener(e -> applyForCreditCard());
         checkPromotions.addActionListener(e -> checkPromotions());
 
@@ -54,28 +43,17 @@ public class RegisteredUserHomeFrame extends JFrame {
     }
 
 
-    private void selectFlight() {
-        // Open the FlightSelectionFrame
-        FlightSelectionFrame flightSelectionFrame = new FlightSelectionFrame(UserType.Unregistered, databaseConnector);
-        flightSelectionFrame.setVisible(true);
-
-    }
-
-
-    private void accessLounge() {
-
-    }
-
     private void applyForCreditCard() {
-        UserUtils.updateCreditCardStatus(databaseConnector, username, true);   
+        userController.updateCreditCardStatus(databaseConnector, username, true);   
     }
 
     private void checkPromotions() {
         
     }
+    
     private void cancelFlight() {
         // Retrieve the list of flights for the user
-        List<String> userFlights = UserUtils.getUserFlights(databaseConnector, username);
+        List<String> userFlights = userController.getUserFlights(databaseConnector, username);
 
         // Show a dialog with the dropdown for the user to choose a flight
         int result = JOptionPane.showConfirmDialog(this, createFlightDropdown(userFlights), "Select Flight to Cancel", JOptionPane.OK_CANCEL_OPTION);
@@ -86,7 +64,7 @@ public class RegisteredUserHomeFrame extends JFrame {
             String selectedFlight = (String) flightDropdown.getSelectedItem();
 
             // Perform the cancellation (you need to implement this)
-            cancelSelectedFlight(selectedFlight);
+            userController.cancelSelectedFlight(selectedFlight, username);
 
             // Optionally, update the UI or show a confirmation message
             JOptionPane.showMessageDialog(this, "Flight canceled: " + selectedFlight, "Cancellation Confirmation", JOptionPane.INFORMATION_MESSAGE);
@@ -104,21 +82,6 @@ public class RegisteredUserHomeFrame extends JFrame {
 
         panel.add(flightDropdown);
         return panel;
-    }
-
-    private void cancelSelectedFlight(String selectedFlight) {
-        // Implement the cancellation logic here, e.g., delete the selected flight from the database
-        String deleteQuery = "DELETE FROM UserFlights WHERE UserName = ? AND Flight = ?";
-
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(deleteQuery)) {
-            preparedStatement.setString(1, username);
-            preparedStatement.setString(2, selectedFlight);
-
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 }
 

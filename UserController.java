@@ -1,9 +1,4 @@
-
-
-
-
 import javax.swing.*;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,8 +6,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserUtils {
+public class UserController {
 
+    private DatabaseConnector databaseConnector;
+
+    public UserController(DatabaseConnector databaseConnector) {
+        this.databaseConnector = databaseConnector;
+    }
+    
     public static void updateCreditCardStatus(DatabaseConnector databaseConnector, String username, boolean hasCompanyCreditCard) {
         String query = "UPDATE Users SET HasCompanyCreditCard = ? WHERE UserName = ?";
 
@@ -52,6 +53,30 @@ public class UserUtils {
         }
 
         return userFlights;
+    }
+    
+
+    public void cancelSelectedFlight(String selectedFlight, String username) {
+        // Implement the cancellation logic here, e.g., delete the selected flight from the database
+        String deleteQuery = "DELETE FROM UserFlights WHERE UserName = ? AND Flight = ?";
+
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(deleteQuery)) {
+            preparedStatement.setString(1, username);
+            preparedStatement.setString(2, selectedFlight);
+
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void selectFlight() {
+        // Open the FlightSelectionFrame
+        FlightSelectionFrame flightSelectionFrame = new FlightSelectionFrame(UserType.Unregistered, databaseConnector);
+        flightSelectionFrame.setVisible(true);
+
     }
 
 }
