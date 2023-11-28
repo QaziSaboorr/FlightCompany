@@ -1,6 +1,14 @@
-
 import javax.swing.*;
+
+import com.mysql.cj.protocol.Message;
+
 import java.awt.*;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.Properties;
 
 
 class PaymentFrame extends JFrame {
@@ -8,12 +16,14 @@ class PaymentFrame extends JFrame {
     private String selectedFlight;
     private String seatNumber;
     private double seatPrice;
+    private String userEmail; // Add this variable
 
-    public PaymentFrame(TicketConfirmationFrame ticketConfirmationFrame, String selectedFlight, String seatNumber, double seatPrice) {
+    public PaymentFrame(TicketConfirmationFrame ticketConfirmationFrame, String selectedFlight, String seatNumber, double seatPrice, String userEmail) {
         this.ticketConfirmationFrame = ticketConfirmationFrame;
         this.selectedFlight = selectedFlight;
         this.seatNumber = seatNumber;
         this.seatPrice = seatPrice;
+        this.userEmail = userEmail; // Set the user email
 
         setTitle("Flight Reservation - Payment");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -71,6 +81,28 @@ class PaymentFrame extends JFrame {
 
         // Additional logic for confirming purchase
         JOptionPane.showMessageDialog(this, "Purchase Confirmed!");
+        updatePaymentsTable();
+        // Send email to the user
+        // sendEmailToUser();
+
         dispose(); // Close the payment frame
+    }
+
+ 
+
+        private void updatePaymentsTable() {
+        try (Connection connection = ticketConfirmationFrame.getDatabaseConnector().getConnection()) {
+            String query = "INSERT INTO Payments (UserID, FlightID, PaymentAmount) " +
+                    "VALUES (?, (SELECT FlightID FROM Flights WHERE FlightNumber = ? LIMIT 1), ?)";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setInt(1, ticketConfirmationFrame.getUserType().ordinal() + 1);
+                preparedStatement.setString(2, selectedFlight);
+                preparedStatement.setDouble(3, seatPrice);
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
 }

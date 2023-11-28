@@ -1,7 +1,4 @@
-
 import javax.swing.*;
-
-
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,6 +13,9 @@ public class TicketConfirmationFrame extends JFrame {
     private double seatPrice;
     private boolean insuranceSelected;
     private DatabaseConnector databaseConnector;
+    
+    // Add the confirmationPanel here
+    private JPanel confirmationPanel;
 
     public TicketConfirmationFrame(UserType userType, String selectedFlight, String seatNumber, String seatType, double seatPrice, boolean insuranceSelected, DatabaseConnector databaseConnector) {
         this.userType = userType;
@@ -24,8 +24,11 @@ public class TicketConfirmationFrame extends JFrame {
         this.seatType = seatType;
         this.seatPrice = seatPrice;
         this.insuranceSelected = insuranceSelected;
-        this.databaseConnector = databaseConnector; // Add this line
-
+        this.databaseConnector = databaseConnector;
+        
+        // Initialize confirmationPanel
+        this.confirmationPanel = new JPanel(); // You might need to adjust this based on your actual UI design
+        
         setTitle("Flight Reservation - Ticket Confirmation");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -109,7 +112,7 @@ public class TicketConfirmationFrame extends JFrame {
         }
         return "N/A";
     }
-    
+
     private String getUserEmail() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT Email FROM Users ORDER BY UserID DESC LIMIT 1";
@@ -125,8 +128,6 @@ public class TicketConfirmationFrame extends JFrame {
         }
         return "N/A";
     }
-    
-    
 
     public void confirmTicket() {
         // Logic for confirming the ticket and updating the database
@@ -161,7 +162,6 @@ public class TicketConfirmationFrame extends JFrame {
         dispose();
     }
 
-    
     private void cancelTicket() {
         try {
             // Use the shared database connector
@@ -182,12 +182,89 @@ public class TicketConfirmationFrame extends JFrame {
         dispose();
     }
 
-
     private void proceedToPayment() {
-        // Open the payment frame
-        PaymentFrame paymentFrame = new PaymentFrame(this, selectedFlight, seatNumber, seatPrice);
+        boolean useCompanionTicket = checkCompanionTicketUsage();
+    
+        if (useCompanionTicket) {
+            // If a companion ticket is redeemed, allow the user to select a second seat
+            String selectedSecondSeat = selectSecondSeat();
+            if (selectedSecondSeat != null) {
+                // Update the confirmation panel with the second seat
+                updateConfirmationPanel(selectedSecondSeat);
+    
+                // Ask the user if they want ticket cancellation insurance for the second seat
+                boolean insuranceSelectedSecondSeat = askForInsurance();
+    
+                // Calculate the total price (base price for two seats + insurance if selected)
+                double totalPrice = seatPrice * 2.0;
+                if (insuranceSelectedSecondSeat) {
+                    totalPrice += 20.0;
+                }
+    
+                // Open the payment frame for the second seat with the updated total price
+                PaymentFrame paymentFrame = new PaymentFrame(this, selectedFlight, selectedSecondSeat, totalPrice, getUserEmail());
+                paymentFrame.setVisible(true);
+                dispose(); // Close the current frame
+            } else {
+                // User canceled the seat selection, do not proceed to payment
+                return;
+            }
+        }
+    
+        // Ask the user if they want ticket cancellation insurance for the first seat
+        boolean insuranceSelectedFirstSeat = askForInsurance();
+    
+        // Calculate the total price (base price for one seat + insurance if selected)
+        double totalPrice = seatPrice;
+        if (insuranceSelectedFirstSeat) {
+            totalPrice += 20.0;
+        }
+    
+        // Open the payment frame for the first seat with the updated total price
+        PaymentFrame paymentFrame = new PaymentFrame(this, selectedFlight, seatNumber, totalPrice, getUserEmail());
         paymentFrame.setVisible(true);
         dispose(); // Close the current frame
     }
+    
+    // Method to ask the user if they want ticket cancellation insurance
+    private boolean askForInsurance() {
+        int option = JOptionPane.showConfirmDialog(this,
+                "Do you want to purchase ticket cancellation insurance for an additional $20?",
+                "Ticket Insurance",
+                JOptionPane.YES_NO_OPTION);
+    
+        return option == JOptionPane.YES_OPTION;
+    }
+    
 
+    private String selectSecondSeat() {
+        SeatSelectionFrame seatSelectionFrame = new SeatSelectionFrame(selectedFlight, userType, databaseConnector);
+        seatSelectionFrame.setVisible(true);
+        // Wait for the seat selection frame to be closed
+        return seatSelectionFrame.getSelectedSeat();
+    }
+
+    private void updateConfirmationPanel(String selectedSecondSeat) {
+        // Update the confirmation panel to display the second seat
+        // You might need to add additional labels or modify existing ones
+        // based on your UI design.
+        // For simplicity, I'm assuming you have a JLabel for the second seat.
+
+        JLabel secondSeatLabel = new JLabel("Second Seat: " + selectedSecondSeat);
+
+        confirmationPanel.add(secondSeatLabel);
+        confirmationPanel.revalidate();
+        confirmationPanel.repaint();
+    }
+
+    // Getter method for userType
+    public UserType getUserType() {
+        return userType;
+    }
+
+    // Getter method for databaseConnector
+    public DatabaseConnector getDatabaseConnector() {
+        return databaseConnector;
+    }
+    
 }

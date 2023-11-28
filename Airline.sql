@@ -18,6 +18,11 @@ CREATE TABLE IF NOT EXISTS Users (
     INDEX(Email)
 );
 
+-- Aircrafts Table
+CREATE TABLE IF NOT EXISTS Aircrafts (
+    AircraftID INT PRIMARY KEY AUTO_INCREMENT,
+    AircraftNumber VARCHAR(50)
+);
 
 -- Flights Table
 CREATE TABLE IF NOT EXISTS Flights (
@@ -64,11 +69,7 @@ CREATE TABLE IF NOT EXISTS Crews (
     FOREIGN KEY (FlightID) REFERENCES Flights(FlightID)
 );
 
--- Aircrafts Table
-CREATE TABLE IF NOT EXISTS Aircrafts (
-    AircraftID INT PRIMARY KEY AUTO_INCREMENT,
-    AircraftNumber VARCHAR(50)
-);
+
 
 -- Destinations Table
 CREATE TABLE IF NOT EXISTS Destinations (
