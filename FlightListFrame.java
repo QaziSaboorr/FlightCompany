@@ -8,7 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class FlightListFrame extends JFrame {
+public class FlightListFrame extends JFrame implements Loader{
     private JTextArea flightListArea;
     private DatabaseConnector databaseConnector;
 
@@ -34,11 +34,12 @@ public class FlightListFrame extends JFrame {
         add(scrollPane, BorderLayout.CENTER);
 
         // Load and display the list of flights
-        loadFlights();
+        loadList();
     }
 
     // Function to load and display the list of flights from the database
-    private void loadFlights() {
+    @Override
+    public void loadList() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT FlightNumber, Origin, Destination FROM Flights";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query);

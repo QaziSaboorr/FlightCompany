@@ -33,7 +33,6 @@ public class UserController {
         }
     }
 
-
     public static List<String> getUserFlights(DatabaseConnector databaseConnector, String username) {
         List<String> userFlights = new ArrayList<>();
         String query = "SELECT Flight FROM UserFlights WHERE UserName = ?";
@@ -54,7 +53,6 @@ public class UserController {
 
         return userFlights;
     }
-    
 
     public void cancelSelectedFlight(String selectedFlight, String username) {
         // Implement the cancellation logic here, e.g., delete the selected flight from the database
@@ -70,7 +68,6 @@ public class UserController {
             e.printStackTrace();
         }
     }
-
 
     public void selectFlight() {
         // Open the FlightSelectionFrame

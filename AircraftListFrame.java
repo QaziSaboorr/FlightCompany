@@ -8,16 +8,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class AircraftListFrame extends JFrame {
+public class AircraftListFrame extends JFrame implements Loader {
     private JTextArea aircraftListArea;
     private DatabaseConnector databaseConnector;
 
-    private DatabaseController databaseController;
-
     public AircraftListFrame(DatabaseConnector databaseConnector) {
         this.databaseConnector = databaseConnector;
-
-        databaseController = new DatabaseController(databaseConnector);
 
         setTitle("Flight Reservation - Aircraft List");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -38,11 +34,12 @@ public class AircraftListFrame extends JFrame {
         add(scrollPane, BorderLayout.CENTER);
 
         // Load and display the list of aircrafts
-        loadAircrafts();
+        loadList();
     }
 
-    // Function to load and display the list of aircrafts from the database
-    private void loadAircrafts() {
+    // // Function to load and display the list of aircrafts from the database
+    @Override
+    public void loadList() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT AircraftNumber FROM Aircrafts";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query);

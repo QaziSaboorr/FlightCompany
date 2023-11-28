@@ -74,6 +74,7 @@ class PaymentFrame extends JFrame {
         ticketConfirmationFrame.confirmTicket();
 
         JOptionPane.showMessageDialog(this, "Purchase Confirmed!");
+        
         dispose(); // Close the payment frame
     }
 

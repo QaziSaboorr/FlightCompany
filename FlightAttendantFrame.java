@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-public class FlightAttendantFrame extends JFrame {
+public class FlightAttendantFrame extends JFrame implements Loader {
     private JComboBox<String> flightComboBox;
     private JButton viewPassengerListButton;
     private DatabaseConnector databaseConnector;
@@ -27,7 +27,7 @@ public class FlightAttendantFrame extends JFrame {
         add(flightComboBox);
         add(viewPassengerListButton);
 
-        loadFlights();
+        loadList();
 
         viewPassengerListButton.addActionListener(e -> {
             String selectedFlightInfo = (String) flightComboBox.getSelectedItem();
@@ -40,7 +40,8 @@ public class FlightAttendantFrame extends JFrame {
         setVisible(true);
     }
 
-    private void loadFlights() {
+    @Override
+    public void loadList() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT FlightNumber, Origin, Destination FROM Flights";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -57,6 +58,7 @@ public class FlightAttendantFrame extends JFrame {
         }
     }
 
+
     private String extractFlightNumber(String flightInfo) {
         int endIndex = flightInfo.indexOf(" -");
         if (endIndex != -1) {
@@ -65,6 +67,4 @@ public class FlightAttendantFrame extends JFrame {
             return flightInfo;
         }
     }
-
-
 }

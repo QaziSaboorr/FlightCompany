@@ -12,14 +12,13 @@ import java.sql.SQLException;
 
 
 
-public class ManageCrewFrame extends JFrame {
+public class ManageCrewFrame extends JFrame implements Loader {
     private JTextField crewNameField;
     private JComboBox<String> flightComboBox;
     private JButton addButton;
     private JButton removeButton; // Added Remove Crew button
     private DatabaseConnector databaseConnector;
     private JComboBox<String> crewDropdown; // Added crew dropdown
-    private JComboBox<String> flightDropdown; // Added flight dropdown  
 
     public ManageCrewFrame(DatabaseConnector databaseConnector) {
         this.databaseConnector = databaseConnector;
@@ -37,10 +36,10 @@ public class ManageCrewFrame extends JFrame {
 
         // Added crew and flight dropdowns
         crewDropdown = new JComboBox<>();
-        flightDropdown = new JComboBox<>();
+
 
         // Load flight numbers and crews into the combo boxes
-        loadFlightNumbers();
+        loadList();
         loadCrewsAndFlights();
 
         // Create the form layout
@@ -97,7 +96,8 @@ public class ManageCrewFrame extends JFrame {
     }   
 
     // Function to load flight numbers into the combo box
-    private void loadFlightNumbers() {
+    @Override
+    public void loadList() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT FlightNumber FROM Flights";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query);

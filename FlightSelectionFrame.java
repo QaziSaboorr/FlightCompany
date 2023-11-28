@@ -7,7 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class FlightSelectionFrame extends JFrame {
+public class FlightSelectionFrame extends JFrame implements Loader {
     private JComboBox<String> flightComboBox;
     private JButton selectFlightButton;
     private JButton showPassengerListButton;  // New button for showing passenger list
@@ -44,7 +44,7 @@ public class FlightSelectionFrame extends JFrame {
             showPassengerListButton.addActionListener(e -> openPassengerListFrame());
         }
 
-        loadFlights();
+        loadList();
 
         selectFlightButton.addActionListener(e -> {
             String selectedFlightInfo = (String) flightComboBox.getSelectedItem();
@@ -63,7 +63,8 @@ public class FlightSelectionFrame extends JFrame {
         setVisible(true);
     }
 
-    private void loadFlights() {
+    @Override
+    public void loadList() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT FlightNumber, Origin, Destination FROM Flights WHERE FlightNumber IS NOT NULL";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query);

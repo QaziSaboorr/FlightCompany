@@ -7,7 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class CrewListFrame extends JFrame {
+public class CrewListFrame extends JFrame implements Loader{
     private JTextArea crewListArea;
     private DatabaseConnector databaseConnector;
 
@@ -33,11 +33,12 @@ public class CrewListFrame extends JFrame {
         add(scrollPane, BorderLayout.CENTER);
 
         // Load and display the list of crews
-        loadCrews();
+        loadList();
     }
 
     // Function to load and display the list of crews from the database
-    private void loadCrews() {
+    @Override
+    public void loadList() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT Name FROM Crews";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query);
