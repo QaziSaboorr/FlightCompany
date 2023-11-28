@@ -45,14 +45,14 @@ public class TicketConfirmationFrame extends JFrame {
     private JPanel createConfirmationPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
+    
         // Display relevant information on the confirmation panel
         panel.add(new JLabel("Flight: " + selectedFlight));
         panel.add(new JLabel("Seat: " + seatNumber + " (" + seatType + ")"));
-
+    
         // Check if companion ticket was used
         boolean useCompanionTicket = checkCompanionTicketUsage();
-
+    
         // Update the price and insurance display based on the use of a companion ticket
         if (useCompanionTicket) {
             seatPrice = 0; // Update price to 0 when using a companion ticket
@@ -63,23 +63,32 @@ public class TicketConfirmationFrame extends JFrame {
             panel.add(new JLabel("Price: $" + seatPrice));
             panel.add(new JLabel("Insurance Selected: " + (insuranceSelected ? "Yes" : "No")));
         }
-
+    
         // Get user name and email
         String userName = getUserName();
         String userEmail = getUserEmail();
-
+    
         panel.add(new JLabel("User Name: " + userName));
         panel.add(new JLabel("Email: " + userEmail));
-
+    
+        // Add extras text for registered users
+        if (getUserType() == UserType.Registered) {
+            panel.add(Box.createVerticalStrut(10)); // Add some vertical spacing
+            panel.add(new JLabel("To thank you for being a Registered User of Vortex Airlines, you get the following:"));
+            panel.add(new JLabel("- Discounted access to Airport Lounges"));
+            panel.add(new JLabel("- Monthly Promos"));
+        }
+    
         // Remove Confirm Ticket button
         JButton proceedToPaymentButton = new JButton("Proceed to Payment");
         proceedToPaymentButton.addActionListener(e -> proceedToPayment());
         panel.add(proceedToPaymentButton);
-
+    
         return panel;
     }
+    
 
-    private boolean checkCompanionTicketUsage() {
+    public boolean checkCompanionTicketUsage() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT HasRedeemedCompanionTicket FROM Users WHERE UserID = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -158,23 +167,50 @@ public class TicketConfirmationFrame extends JFrame {
                     seatPrice += 20.0; // Increment seat price if insurance is selected
                 }
     
-                String query = "INSERT INTO Tickets (UserID, Email, UserName, FlightID, SeatID, SeatType, SeatNumber, Destination, InsuranceSelected, PaymentAmount) " +
+                // Insert data into the Tickets table
+                String ticketInsertQuery = "INSERT INTO Tickets (UserID, Email, UserName, FlightID, SeatID, SeatType, SeatNumber, Destination, InsuranceSelected, PaymentAmount) " +
                         "VALUES (?, ?, ?, (SELECT FlightID FROM Flights WHERE FlightNumber = ? LIMIT 1), " +
                         "(SELECT SeatID FROM Seats WHERE SeatNumber = ? LIMIT 1), ?, ?, " +
                         "(SELECT Destination FROM Flights WHERE FlightNumber = ? LIMIT 1), ?, ?)";
     
-                try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                    preparedStatement.setInt(1, userType.ordinal() + 1);
-                    preparedStatement.setString(2, getUserEmail());
-                    preparedStatement.setString(3, getUserName());
-                    preparedStatement.setString(4, selectedFlight);
-                    preparedStatement.setString(5, seatNumber);
-                    preparedStatement.setString(6, seatType);
-                    preparedStatement.setString(7, seatNumber);
-                    preparedStatement.setString(8, selectedFlight);
-                    preparedStatement.setBoolean(9, insuranceSelected);
-                    preparedStatement.setDouble(10, seatPrice);
-                    preparedStatement.executeUpdate();
+                try (PreparedStatement ticketPreparedStatement = connection.prepareStatement(ticketInsertQuery, PreparedStatement.RETURN_GENERATED_KEYS)) {
+                    ticketPreparedStatement.setInt(1, userType.ordinal() + 1);
+                    ticketPreparedStatement.setString(2, getUserEmail());
+                    ticketPreparedStatement.setString(3, getUserName());
+                    ticketPreparedStatement.setString(4, selectedFlight);
+                    ticketPreparedStatement.setString(5, seatNumber);
+                    ticketPreparedStatement.setString(6, seatType);
+                    ticketPreparedStatement.setString(7, seatNumber);
+                    ticketPreparedStatement.setString(8, selectedFlight);
+                    ticketPreparedStatement.setBoolean(9, insuranceSelected);
+                    ticketPreparedStatement.setDouble(10, seatPrice);
+                    ticketPreparedStatement.executeUpdate();
+    
+                    // Retrieve the auto-generated ticket ID
+                    try (ResultSet generatedKeys = ticketPreparedStatement.getGeneratedKeys()) {
+                        if (generatedKeys.next()) {
+                            int ticketID = generatedKeys.getInt(1);
+    
+                            // Insert data into the Passengers table
+                            String passengerInsertQuery = "INSERT INTO Passengers (TicketID, FlightID, PassengerName) VALUES (?, (SELECT FlightID FROM Flights WHERE FlightNumber = ? LIMIT 1), ?)";
+                            try (PreparedStatement passengerPreparedStatement = connection.prepareStatement(passengerInsertQuery)) {
+                                passengerPreparedStatement.setInt(1, ticketID);
+                                passengerPreparedStatement.setString(2, selectedFlight);
+                                passengerPreparedStatement.setString(3, getUserName());
+                                passengerPreparedStatement.executeUpdate();
+                            }
+    
+                            // Insert data into the Payments table
+                            String paymentInsertQuery = "INSERT INTO Payments (TicketID, PaymentAmount) VALUES (?, ?)";
+                            try (PreparedStatement paymentPreparedStatement = connection.prepareStatement(paymentInsertQuery)) {
+                                paymentPreparedStatement.setInt(1, ticketID);
+                                paymentPreparedStatement.setDouble(2, seatPrice);
+                                paymentPreparedStatement.executeUpdate();
+                            }
+                        } else {
+                            throw new SQLException("Failed to retrieve the generated ticket ID.");
+                        }
+                    }
                 }
             }
         } catch (SQLException ex) {

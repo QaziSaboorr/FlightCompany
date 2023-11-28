@@ -153,7 +153,19 @@ public class LoginFrame extends JFrame {
         } else if (userType == UserType.SystemAdmin) {
             SystemAdminFrame systemAdminFrame = new SystemAdminFrame(databaseConnector);
             systemAdminFrame.setVisible(true);
-        } else {
+        } 
+        else if(userType == UserType.Unregistered) {
+            UserHomeFrame userHomeFrame = new UserHomeFrame(databaseConnector);
+            userHomeFrame.setVisible(true);
+
+        }
+        else if(userType == UserType.Registered) {
+            RegisteredUserHomeFrame registeredUserHomeFrame = new RegisteredUserHomeFrame(databaseConnector, username);
+            registeredUserHomeFrame.setVisible(true);
+
+        }
+        
+        else {
             // Check if the user has a ticket
             boolean hasTicket = checkUserHasTicket(username);
     

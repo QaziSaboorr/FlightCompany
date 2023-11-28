@@ -19,7 +19,7 @@ class PaymentFrame extends JFrame {
         setTitle("Flight Reservation - Payment");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        setSize(400, 250); // Adjust the size as needed
+        setSize(400, 350); // Adjust the size as needed
         setLocationRelativeTo(null);
 
         // Implement your payment UI here
@@ -86,9 +86,17 @@ class PaymentFrame extends JFrame {
     
             double finalSeatPrice = seatPrice;
     
+            // Check if companion ticket is redeemed
+            boolean useCompanionTicket = ticketConfirmationFrame.checkCompanionTicketUsage();
+    
             // Check if cancellation insurance is selected and adjust the price
             if (ticketConfirmationFrame.isInsuranceSelected()) {
                 finalSeatPrice += 20.0; // Assuming cancellation insurance adds $20
+            }
+    
+            // If a companion ticket is redeemed, set PaymentAmount to 0
+            if (useCompanionTicket) {
+                finalSeatPrice = 0.0;
             }
     
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
