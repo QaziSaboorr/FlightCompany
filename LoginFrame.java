@@ -1,8 +1,7 @@
 
-import javax.swing.*;
-
-
-
+import javax.swing.*; 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -146,6 +145,8 @@ public class LoginFrame extends JFrame {
 
         return false;
     }
+
+
     private void openFlightSelectionFrame(UserType userType, String username, String password) {
         if (userType == UserType.FlightAttendant) {
             FlightAttendantFrame flightAttendantFrame = new FlightAttendantFrame(databaseConnector);
@@ -164,15 +165,24 @@ public class LoginFrame extends JFrame {
                 // Add a button to cancel the ticket
                 JButton cancelTicketButton = new JButton("Cancel Ticket");
                 cancelTicketButton.addActionListener(e -> cancelTicket(username));
-                add(cancelTicketButton);
+    
+                // Use getContentPane() to get the content pane of the frame
+                getContentPane().add(cancelTicketButton);
+    
+                // Revalidate and repaint the frame to update the UI
+                revalidate();
+                repaint();
             } else {
                 // If the user does not have a ticket, proceed to flight selection
                 FlightSelectionFrame flightSelectionFrame = new FlightSelectionFrame(userType, databaseConnector);
                 flightSelectionFrame.setVisible(true);
             }
         }
-        this.dispose();
+        // Do not dispose of the frame here
     }
+    
+    
+    
     
     private boolean checkUserHasTicket(String username) {
         String query = "SELECT * FROM Tickets WHERE UserName = ?";
@@ -192,33 +202,88 @@ public class LoginFrame extends JFrame {
     }
     
     private void displayUserTicket(String username) {
-        // Implement the logic to display the user's ticket based on their UserType
-        // For example, fetch and display relevant information from the Tickets table
-        // You can use a JOptionPane or create a new JFrame for displaying the ticket details
-        // This could include information such as flight details, seat, price, etc.
-        // You can reuse some of the logic from the TicketConfirmationFrame class for displaying ticket details.
-        // Note: This is a simplified example, and you might need to adjust it based on your database schema and requirements.
-    }
-    
-    private void cancelTicket(String username) {
-        // Implement the logic to cancel the user's ticket by removing the corresponding row from the Tickets table
-        String query = "DELETE FROM Tickets WHERE UserName = ?";
+        // Query to retrieve ticket information based on the user's username
+        String query = "SELECT * FROM Tickets WHERE UserName = ?";
     
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, username);
-            preparedStatement.executeUpdate();
     
-            JOptionPane.showMessageDialog(this, "Ticket Cancelled!");
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    // Extract ticket information from the ResultSet
+                    int ticketID = resultSet.getInt("TicketID");
+                    int userID = resultSet.getInt("UserID");
+                    String email = resultSet.getString("Email");
+                    String flightID = resultSet.getString("FlightID");
+                    int seatID = resultSet.getInt("SeatID");
+                    String seatType = resultSet.getString("SeatType");
+                    String seatNumber = resultSet.getString("SeatNumber");
+                    String destination = resultSet.getString("Destination");
+                    boolean isCancelled = resultSet.getBoolean("IsCancelled");
+                    boolean insuranceSelected = resultSet.getBoolean("InsuranceSelected");
+                    double paymentAmount = resultSet.getDouble("PaymentAmount");
+                    boolean emailSent = resultSet.getBoolean("EmailSent");
+                    boolean receiptSent = resultSet.getBoolean("ReceiptSent");
+    
+                    // Display the ticket information
+                    StringBuilder ticketInfo = new StringBuilder();
+                    ticketInfo.append("Ticket ID: ").append(ticketID).append("\n");
+                    ticketInfo.append("User ID: ").append(userID).append("\n");
+                    ticketInfo.append("Email: ").append(email).append("\n");
+                    ticketInfo.append("Flight ID: ").append(flightID).append("\n");
+                    ticketInfo.append("Seat ID: ").append(seatID).append("\n");
+                    ticketInfo.append("Seat Type: ").append(seatType).append("\n");
+                    ticketInfo.append("Seat Number: ").append(seatNumber).append("\n");
+                    ticketInfo.append("Destination: ").append(destination).append("\n");
+                    ticketInfo.append("Is Cancelled: ").append(isCancelled).append("\n");
+                    ticketInfo.append("Insurance Selected: ").append(insuranceSelected).append("\n");
+                    ticketInfo.append("Payment Amount: $").append(paymentAmount).append("\n");
+                    ticketInfo.append("Email Sent: ").append(emailSent).append("\n");
+                    ticketInfo.append("Receipt Sent: ").append(receiptSent).append("\n");
+    
+                    // Display the ticket information using JOptionPane
+                    JOptionPane.showMessageDialog(this, ticketInfo.toString(), "Ticket Details", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "No ticket found for the user.", "Ticket Details", JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    
-        // Additional logic for ticket cancellation (e.g., updating UI)
-        // You may need to refresh the UI or close the current frame, depending on your application flow.
     }
+    
 
     
+    private void cancelTicket(String username) {
+        // Update the logic to cancel the user's ticket and set the cancellation date
+        String updateQuery = "UPDATE Tickets SET IsCancelled = true, CancellationDate = ?, SeatID = null WHERE UserName = ?";
+        
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
+            // Set the cancellation date parameter to the current date and time
+            Timestamp cancellationDate = new Timestamp(new Date().getTime());
+            preparedStatement.setTimestamp(1, cancellationDate);
+            
+            // Set the username parameter
+            preparedStatement.setString(2, username);
+            
+            int rowsAffected = preparedStatement.executeUpdate();
+        
+            if (rowsAffected > 0) {
+                JOptionPane.showMessageDialog(this, "Ticket Cancelled!");
+                revalidate();
+                repaint();
+            } else {
+                JOptionPane.showMessageDialog(this, "Ticket not found for cancellation.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    
+
     private void openUserRegistrationFrame() {
         UserRegistrationFrame registrationFrame = new UserRegistrationFrame(databaseConnector, this);
         registrationFrame.setVisible(true);
@@ -242,6 +307,11 @@ public class LoginFrame extends JFrame {
     }
 
     private void checkCreditCard(UserType userType, String username) {
+        // Exclude the prompt for company credit card for specific user types
+        if (userType == UserType.SystemAdmin || userType == UserType.FlightAttendant || userType == UserType.AirlineAgent) {
+            return;
+        }
+
         // Check credit card status and prompt if needed
         boolean hasCompanyCreditCard = getCompanyCreditCardStatus(username);
         if (!hasCompanyCreditCard) {
@@ -254,6 +324,7 @@ public class LoginFrame extends JFrame {
             }
         }
     }
+
 
     private void checkRedeemedCompanionTicket(UserType userType, String username) {
         if (userType == UserType.Registered) {
@@ -270,6 +341,7 @@ public class LoginFrame extends JFrame {
             }
         }
     }
+    
     private boolean getMembershipStatus(String username) {
         String query = "SELECT IsMember FROM Users WHERE UserName = ?";
 

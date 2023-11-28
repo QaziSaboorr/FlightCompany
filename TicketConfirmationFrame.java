@@ -1,4 +1,6 @@
 import javax.swing.*;
+
+
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,8 +16,6 @@ public class TicketConfirmationFrame extends JFrame {
     private boolean insuranceSelected;
     private DatabaseConnector databaseConnector;
     
-    // Add the confirmationPanel here
-    private JPanel confirmationPanel;
 
     public TicketConfirmationFrame(UserType userType, String selectedFlight, String seatNumber, String seatType, double seatPrice, boolean insuranceSelected, DatabaseConnector databaseConnector) {
         this.userType = userType;
@@ -24,11 +24,8 @@ public class TicketConfirmationFrame extends JFrame {
         this.seatType = seatType;
         this.seatPrice = seatPrice;
         this.insuranceSelected = insuranceSelected;
-        this.databaseConnector = databaseConnector;
-        
-        // Initialize confirmationPanel
-        this.confirmationPanel = new JPanel(); // You might need to adjust this based on your actual UI design
-        
+        this.databaseConnector = databaseConnector; // Add this line
+
         setTitle("Flight Reservation - Ticket Confirmation");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -48,14 +45,14 @@ public class TicketConfirmationFrame extends JFrame {
     private JPanel createConfirmationPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
+    
         // Display relevant information on the confirmation panel
         panel.add(new JLabel("Flight: " + selectedFlight));
         panel.add(new JLabel("Seat: " + seatNumber + " (" + seatType + ")"));
-
+    
         // Check if companion ticket was used
         boolean useCompanionTicket = checkCompanionTicketUsage();
-
+    
         // Update the price and insurance display based on the use of a companion ticket
         if (useCompanionTicket) {
             seatPrice = 0; // Update price to 0 when using a companion ticket
@@ -66,23 +63,32 @@ public class TicketConfirmationFrame extends JFrame {
             panel.add(new JLabel("Price: $" + seatPrice));
             panel.add(new JLabel("Insurance Selected: " + (insuranceSelected ? "Yes" : "No")));
         }
-
+    
         // Get user name and email
         String userName = getUserName();
         String userEmail = getUserEmail();
-
+    
         panel.add(new JLabel("User Name: " + userName));
         panel.add(new JLabel("Email: " + userEmail));
-
+    
+        // Add extras text for registered users
+        if (getUserType() == UserType.Registered) {
+            panel.add(Box.createVerticalStrut(10)); // Add some vertical spacing
+            panel.add(new JLabel("To thank you for being a Registered User of Vortex Airlines, you get the following:"));
+            panel.add(new JLabel("- Discounted access to Airport Lounges"));
+            panel.add(new JLabel("- Monthly Promos"));
+        }
+    
         // Remove Confirm Ticket button
         JButton proceedToPaymentButton = new JButton("Proceed to Payment");
         proceedToPaymentButton.addActionListener(e -> proceedToPayment());
         panel.add(proceedToPaymentButton);
-
+    
         return panel;
     }
+    
 
-    private boolean checkCompanionTicketUsage() {
+    public boolean checkCompanionTicketUsage() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT HasRedeemedCompanionTicket FROM Users WHERE UserID = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -112,8 +118,8 @@ public class TicketConfirmationFrame extends JFrame {
         }
         return "N/A";
     }
-
-    private String getUserEmail() {
+    
+    public String getUserEmail() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT Email FROM Users ORDER BY UserID DESC LIMIT 1";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -128,40 +134,95 @@ public class TicketConfirmationFrame extends JFrame {
         }
         return "N/A";
     }
+    // Getter method for userType
+    public UserType getUserType() {
+        return userType;
+    }
+
+    // Getter method for databaseConnector
+    public DatabaseConnector getDatabaseConnector() {
+        return databaseConnector;
+    }
+
+    // Getter method for seatType
+    public String getSeatType() {
+        return seatType;
+    }
+    
+
 
     public void confirmTicket() {
         // Logic for confirming the ticket and updating the database
         try {
             // Use the shared database connector
             try (Connection connection = databaseConnector.getConnection()) {
-                String query = "INSERT INTO Tickets (UserID, Email, UserName, FlightID, SeatID, SeatType, SeatNumber, Destination, InsuranceSelected, PaymentAmount) " +
+                // Check if a companion ticket is redeemed
+                boolean useCompanionTicket = checkCompanionTicketUsage();
+    
+                // Adjust seat price based on the companion ticket redemption
+                if (useCompanionTicket) {
+                    seatPrice = 0.0; // The ticket is free if a companion ticket is redeemed
+                    insuranceSelected = false; // Companion ticket comes with free insurance
+                } else if (insuranceSelected) {
+                    seatPrice += 20.0; // Increment seat price if insurance is selected
+                }
+    
+                // Insert data into the Tickets table
+                String ticketInsertQuery = "INSERT INTO Tickets (UserID, Email, UserName, FlightID, SeatID, SeatType, SeatNumber, Destination, InsuranceSelected, PaymentAmount) " +
                         "VALUES (?, ?, ?, (SELECT FlightID FROM Flights WHERE FlightNumber = ? LIMIT 1), " +
                         "(SELECT SeatID FROM Seats WHERE SeatNumber = ? LIMIT 1), ?, ?, " +
                         "(SELECT Destination FROM Flights WHERE FlightNumber = ? LIMIT 1), ?, ?)";
-
-                try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                    preparedStatement.setInt(1, userType.ordinal() + 1);
-                    preparedStatement.setString(2, getUserEmail());
-                    preparedStatement.setString(3, getUserName());
-                    preparedStatement.setString(4, selectedFlight);
-                    preparedStatement.setString(5, seatNumber);
-                    preparedStatement.setString(6, seatType);
-                    preparedStatement.setString(7, seatNumber);
-                    preparedStatement.setString(8, selectedFlight);
-                    preparedStatement.setBoolean(9, insuranceSelected);
-                    preparedStatement.setDouble(10, seatPrice);
-                    preparedStatement.executeUpdate();
+    
+                try (PreparedStatement ticketPreparedStatement = connection.prepareStatement(ticketInsertQuery, PreparedStatement.RETURN_GENERATED_KEYS)) {
+                    ticketPreparedStatement.setInt(1, userType.ordinal() + 1);
+                    ticketPreparedStatement.setString(2, getUserEmail());
+                    ticketPreparedStatement.setString(3, getUserName());
+                    ticketPreparedStatement.setString(4, selectedFlight);
+                    ticketPreparedStatement.setString(5, seatNumber);
+                    ticketPreparedStatement.setString(6, seatType);
+                    ticketPreparedStatement.setString(7, seatNumber);
+                    ticketPreparedStatement.setString(8, selectedFlight);
+                    ticketPreparedStatement.setBoolean(9, insuranceSelected);
+                    ticketPreparedStatement.setDouble(10, seatPrice);
+                    ticketPreparedStatement.executeUpdate();
+    
+                    // Retrieve the auto-generated ticket ID
+                    try (ResultSet generatedKeys = ticketPreparedStatement.getGeneratedKeys()) {
+                        if (generatedKeys.next()) {
+                            int ticketID = generatedKeys.getInt(1);
+    
+                            // Insert data into the Passengers table
+                            String passengerInsertQuery = "INSERT INTO Passengers (TicketID, FlightID, PassengerName) VALUES (?, (SELECT FlightID FROM Flights WHERE FlightNumber = ? LIMIT 1), ?)";
+                            try (PreparedStatement passengerPreparedStatement = connection.prepareStatement(passengerInsertQuery)) {
+                                passengerPreparedStatement.setInt(1, ticketID);
+                                passengerPreparedStatement.setString(2, selectedFlight);
+                                passengerPreparedStatement.setString(3, getUserName());
+                                passengerPreparedStatement.executeUpdate();
+                            }
+    
+                            // Insert data into the Payments table
+                            String paymentInsertQuery = "INSERT INTO Payments (TicketID, PaymentAmount) VALUES (?, ?)";
+                            try (PreparedStatement paymentPreparedStatement = connection.prepareStatement(paymentInsertQuery)) {
+                                paymentPreparedStatement.setInt(1, ticketID);
+                                paymentPreparedStatement.setDouble(2, seatPrice);
+                                paymentPreparedStatement.executeUpdate();
+                            }
+                        } else {
+                            throw new SQLException("Failed to retrieve the generated ticket ID.");
+                        }
+                    }
                 }
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
-
+    
         // Additional logic for ticket confirmation (e.g., sending email, updating UI)
         JOptionPane.showMessageDialog(this, "Ticket Confirmed!");
         dispose();
     }
-
+    
+    
     private void cancelTicket() {
         try {
             // Use the shared database connector
@@ -182,89 +243,16 @@ public class TicketConfirmationFrame extends JFrame {
         dispose();
     }
 
+
     private void proceedToPayment() {
-        boolean useCompanionTicket = checkCompanionTicketUsage();
-    
-        if (useCompanionTicket) {
-            // If a companion ticket is redeemed, allow the user to select a second seat
-            String selectedSecondSeat = selectSecondSeat();
-            if (selectedSecondSeat != null) {
-                // Update the confirmation panel with the second seat
-                updateConfirmationPanel(selectedSecondSeat);
-    
-                // Ask the user if they want ticket cancellation insurance for the second seat
-                boolean insuranceSelectedSecondSeat = askForInsurance();
-    
-                // Calculate the total price (base price for two seats + insurance if selected)
-                double totalPrice = seatPrice * 2.0;
-                if (insuranceSelectedSecondSeat) {
-                    totalPrice += 20.0;
-                }
-    
-                // Open the payment frame for the second seat with the updated total price
-                PaymentFrame paymentFrame = new PaymentFrame(this, selectedFlight, selectedSecondSeat, totalPrice, getUserEmail());
-                paymentFrame.setVisible(true);
-                dispose(); // Close the current frame
-            } else {
-                // User canceled the seat selection, do not proceed to payment
-                return;
-            }
-        }
-    
-        // Ask the user if they want ticket cancellation insurance for the first seat
-        boolean insuranceSelectedFirstSeat = askForInsurance();
-    
-        // Calculate the total price (base price for one seat + insurance if selected)
-        double totalPrice = seatPrice;
-        if (insuranceSelectedFirstSeat) {
-            totalPrice += 20.0;
-        }
-    
-        // Open the payment frame for the first seat with the updated total price
-        PaymentFrame paymentFrame = new PaymentFrame(this, selectedFlight, seatNumber, totalPrice, getUserEmail());
+        // Open the payment frame
+        PaymentFrame paymentFrame = new PaymentFrame(this, selectedFlight, seatNumber, seatPrice);
         paymentFrame.setVisible(true);
         dispose(); // Close the current frame
     }
-    
-    // Method to ask the user if they want ticket cancellation insurance
-    private boolean askForInsurance() {
-        int option = JOptionPane.showConfirmDialog(this,
-                "Do you want to purchase ticket cancellation insurance for an additional $20?",
-                "Ticket Insurance",
-                JOptionPane.YES_NO_OPTION);
-    
-        return option == JOptionPane.YES_OPTION;
-    }
-    
 
-    private String selectSecondSeat() {
-        SeatSelectionFrame seatSelectionFrame = new SeatSelectionFrame(selectedFlight, userType, databaseConnector);
-        seatSelectionFrame.setVisible(true);
-        // Wait for the seat selection frame to be closed
-        return seatSelectionFrame.getSelectedSeat();
-    }
-
-    private void updateConfirmationPanel(String selectedSecondSeat) {
-        // Update the confirmation panel to display the second seat
-        // You might need to add additional labels or modify existing ones
-        // based on your UI design.
-        // For simplicity, I'm assuming you have a JLabel for the second seat.
-
-        JLabel secondSeatLabel = new JLabel("Second Seat: " + selectedSecondSeat);
-
-        confirmationPanel.add(secondSeatLabel);
-        confirmationPanel.revalidate();
-        confirmationPanel.repaint();
-    }
-
-    // Getter method for userType
-    public UserType getUserType() {
-        return userType;
-    }
-
-    // Getter method for databaseConnector
-    public DatabaseConnector getDatabaseConnector() {
-        return databaseConnector;
+    public boolean isInsuranceSelected() {
+        return insuranceSelected;
     }
     
 }

@@ -127,18 +127,32 @@ public class ManageFlightsFrame extends JFrame {
         try (Connection connection = databaseConnector.getConnection()) {
             // Get the AircraftID for the selected aircraft number
             int aircraftID = getAircraftID(connection, aircraftNumber);
+            
+
+            // Check if the flight already exists
+            if (flightExists(connection, flightNumber)) {
+                JOptionPane.showMessageDialog(this, "Flight with the given flight number already exists.");
+                return;
+            }
     
             // Insert the flight information into the Flights table with a JOIN to get DestinationName
             String query = "INSERT INTO Flights (FlightNumber, Origin, Destination, AircraftID) " +
-                           "SELECT ?, ?, Destinations.DestinationName, ? " +
-                           "FROM Destinations " +
-                           "WHERE Destinations.DestinationID = ?";
+                    "SELECT ?, ?, Destinations.DestinationName, ? " +
+                    "FROM Destinations " +
+                    "WHERE Destinations.DestinationID = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, flightNumber);
                 preparedStatement.setString(2, origin);
                 preparedStatement.setInt(3, aircraftID);
                 preparedStatement.setInt(4, getDestinationID(connection, destination));
                 preparedStatement.executeUpdate();
+    
+                // Get the FlightID for the newly added flight
+                int newFlightID = getFlightID(connection, flightNumber);
+    
+                // Add seats for the new flight
+                addSeatsForFlight(connection, newFlightID);
+    
                 JOptionPane.showMessageDialog(this, "Flight added successfully.");
                 flightNumberField.setText(""); // Clear the input fields after adding
                 originField.setText("");
@@ -148,6 +162,32 @@ public class ManageFlightsFrame extends JFrame {
             JOptionPane.showMessageDialog(this, "Error adding flight.");
         }
     }
+    
+    // Function to check if a flight with the given flight number already exists
+    private boolean flightExists(Connection connection, String flightNumber) throws SQLException {
+        String query = "SELECT FlightID FROM Flights WHERE FlightNumber = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, flightNumber);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next(); // Returns true if a matching flight is found
+            }
+        }
+    }
+    
+    // Function to get the FlightID for a given flight number
+    private int getFlightID(Connection connection, String flightNumber) throws SQLException {
+        String query = "SELECT FlightID FROM Flights WHERE FlightNumber = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, flightNumber);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("FlightID");
+                }
+            }
+        }
+        return -1; // Return -1 if FlightID is not found (should not happen in a well-formed database)
+    }
+    
     
 
     // Function to get the DestinationID for a given destination name
@@ -199,4 +239,22 @@ public class ManageFlightsFrame extends JFrame {
         }
     }
     
+    private void addSeatsForFlight(Connection connection, int flightID) throws SQLException {
+        // Define the seat data
+        String[] seatNumbers = {"A1", "A2", "A3", "A4", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4", "D1", "D2", "D3", "D4"};
+        String[] seatTypes = {"Business-Class", "Business-Class", "Business-Class", "Business-Class", "Business-Class", "Business-Class", "Business-Class", "Business-Class", "Regular", "Regular", "Regular", "Regular", "Regular", "Regular", "Regular", "Regular"};
+        double[] seatPrices = {200.00, 200.00, 200.00, 200.00, 200.00, 200.00, 200.00, 200.00, 100.00, 100.00, 100.00, 100.00, 100.00, 100.00, 100.00, 100.00};
+
+        // Insert seat data into the Seats table for the given flightID
+        String query = "INSERT INTO Seats (FlightID, SeatNumber, SeatType, SeatPrice) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            for (int i = 0; i < seatNumbers.length; i++) {
+                preparedStatement.setInt(1, flightID);
+                preparedStatement.setString(2, seatNumbers[i]);
+                preparedStatement.setString(3, seatTypes[i]);
+                preparedStatement.setDouble(4, seatPrices[i]);
+                preparedStatement.executeUpdate();
+            }
+        }
+    }
 }
