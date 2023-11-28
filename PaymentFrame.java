@@ -7,13 +7,11 @@ import java.sql.SQLException;
 class PaymentFrame extends JFrame {
     private TicketConfirmationFrame ticketConfirmationFrame;
     private String selectedFlight;
-    private String seatNumber;
     private double seatPrice;
 
     public PaymentFrame(TicketConfirmationFrame ticketConfirmationFrame, String selectedFlight, String seatNumber, double seatPrice) {
         this.ticketConfirmationFrame = ticketConfirmationFrame;
         this.selectedFlight = selectedFlight;
-        this.seatNumber = seatNumber;
         this.seatPrice = seatPrice;
 
         setTitle("Flight Reservation - Payment");
@@ -74,7 +72,7 @@ class PaymentFrame extends JFrame {
         ticketConfirmationFrame.confirmTicket();
 
         JOptionPane.showMessageDialog(this, "Purchase Confirmed!");
-        
+
         dispose(); // Close the payment frame
     }
 

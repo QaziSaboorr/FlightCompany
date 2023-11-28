@@ -90,9 +90,6 @@ public class LoginController {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    
-        // Additional logic for ticket cancellation (e.g., updating UI)
-        // You may need to refresh the UI or close the current frame, depending on your application flow.
     }
 
 

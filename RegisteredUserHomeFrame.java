@@ -27,17 +27,14 @@ public class RegisteredUserHomeFrame extends JFrame {
         JButton flightSelectionButton = new JButton("Select Flights");
         JButton cancelFlightButton = new JButton("Cancel Flight");
         JButton applyForCreditCard = new JButton("Apply for Credit Card");
-        JButton checkPromotions = new JButton("Check Promotions");
 
         add(flightSelectionButton);
         add(cancelFlightButton);
         add(applyForCreditCard);
-        add(checkPromotions);
 
         flightSelectionButton.addActionListener(e -> selectFlight(UserType.Registered));
         cancelFlightButton.addActionListener(e -> cancelFlight());
         applyForCreditCard.addActionListener(e -> applyForCreditCard());
-        checkPromotions.addActionListener(e -> checkPromotions());
 
         setVisible(true);
     }
@@ -50,10 +47,6 @@ public class RegisteredUserHomeFrame extends JFrame {
         userController.updateCreditCardStatus(databaseConnector, username, true);   
     }
 
-    private void checkPromotions() {
-        
-    }
-    
     private void cancelFlight() {
         // Retrieve the list of flights for the user
         List<String> userFlights = userController.getUserFlights(databaseConnector, username);
