@@ -1,27 +1,18 @@
+
 import javax.swing.*;
+
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
-// Interface for classes that load and display lists
-interface ListLoader {
-    void loadList();
-}
-
-public class PassengerListFrame extends JFrame implements ListLoader {
+public class PassengerListFrame extends JFrame {
     private JTextArea passengerListArea;
     private DatabaseConnector databaseConnector;
-    private String selectedFlight;
-    private List<Passenger> passengerList;
 
     public PassengerListFrame(String selectedFlight, DatabaseConnector databaseConnector) {
         this.databaseConnector = databaseConnector;
-        this.selectedFlight = selectedFlight;
-        this.passengerList = new ArrayList<>();
 
         setTitle("Flight Reservation - Passenger List");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -42,12 +33,11 @@ public class PassengerListFrame extends JFrame implements ListLoader {
         add(scrollPane, BorderLayout.CENTER);
 
         // Load and display the list of passengers for the selected flight
-        loadList();
+        loadPassengers(selectedFlight);
     }
 
     // Function to load and display the list of passengers for the selected flight from the database
-    @Override
-    public void loadList() {
+    private void loadPassengers(String selectedFlight) {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT * FROM Passengers WHERE FlightID = (SELECT FlightID FROM Flights WHERE FlightNumber = ?)";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {

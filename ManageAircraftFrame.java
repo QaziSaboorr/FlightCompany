@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class ManageAircraftFrame extends JFrame implements ListLoader{
+public class ManageAircraftFrame extends JFrame {
     private JTextField aircraftNumberField;
     private JComboBox<String> aircraftDropdown;
     private JButton addButton;
@@ -51,7 +51,7 @@ public class ManageAircraftFrame extends JFrame implements ListLoader{
             }
         });
 
-        loadList();
+        loadAircraftAndFlights();
     }
 
 private void addAircraft() {
@@ -142,7 +142,7 @@ private void removeAircraft() {
 
             JOptionPane.showMessageDialog(this, "All aircrafts of model '" + selectedAircraftModel + "' and their associated flights have been removed.");
             aircraftDropdown.removeAllItems();
-            loadList();
+            loadAircraftAndFlights();
 
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -165,8 +165,8 @@ private void removeAircraft() {
         }
     }
 
-    @Override
-    public void loadList() {
+
+    private void loadAircraftAndFlights() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT a.AircraftNumber, f.FlightNumber " +
                     "FROM Aircrafts a " +
@@ -186,25 +186,3 @@ private void removeAircraft() {
         }
     }
 }
-
-//     @Override
-//     private void loadAircraftAndFlights() {
-//         try (Connection connection = databaseConnector.getConnection()) {
-//             String query = "SELECT a.AircraftNumber, f.FlightNumber " +
-//                     "FROM Aircrafts a " +
-//                     "LEFT JOIN Flights f ON a.AircraftID = f.AircraftID";
-//             try (PreparedStatement preparedStatement = connection.prepareStatement(query);
-//                  ResultSet resultSet = preparedStatement.executeQuery()) {
-//                 while (resultSet.next()) {
-//                     String aircraftNumber = resultSet.getString("AircraftNumber");
-//                     String flightNumber = resultSet.getString("FlightNumber");
-//                     String aircraftInfo = aircraftNumber + " - " + (flightNumber != null ? flightNumber : "No Flight");
-//                     aircraftDropdown.addItem(aircraftInfo);
-//                 }
-//             }
-//         } catch (SQLException ex) {
-//             ex.printStackTrace();
-//             JOptionPane.showMessageDialog(this, "Error loading aircraft and flight information.");
-//         }
-//     }
-// }

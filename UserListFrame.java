@@ -1,12 +1,11 @@
 import javax.swing.*;
-
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class UserListFrame extends JFrame implements ListLoader{
+public class UserListFrame extends JFrame {
     private JList<String> userList;
     private DatabaseConnector databaseConnector;
 
@@ -26,7 +25,7 @@ public class UserListFrame extends JFrame implements ListLoader{
         JScrollPane scrollPane = new JScrollPane(userList);
 
         // Load users from the database
-        loadList();
+        loadUsers();
 
         // Layout setup
         setLayout(new BorderLayout());
@@ -35,8 +34,7 @@ public class UserListFrame extends JFrame implements ListLoader{
     }
 
     // Function to load registered users from the database
-    @Override
-    public void loadList() {
+    private void loadUsers() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT UserName, Email, UserType, Address FROM Users WHERE UserType = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {

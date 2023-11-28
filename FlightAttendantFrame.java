@@ -1,17 +1,18 @@
 import javax.swing.*;
-import java.util.List;
 
-public class FlightAttendantFrame extends JFrame implements ListLoader, Printer {
+
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+public class FlightAttendantFrame extends JFrame {
     private JComboBox<String> flightComboBox;
     private JButton viewPassengerListButton;
-
-    private ItemLoader itemLoader;
-    private FlightController flightController;
+    private DatabaseConnector databaseConnector;
 
     public FlightAttendantFrame(DatabaseConnector databaseConnector) {
-        this.itemLoader = new ItemLoader(databaseConnector);
-
-        flightController = new FlightController(databaseConnector);
+        this.databaseConnector = databaseConnector;
 
         setTitle("Flight Reservation - Flight Attendant");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -28,11 +29,11 @@ public class FlightAttendantFrame extends JFrame implements ListLoader, Printer 
         add(flightComboBox);
         add(viewPassengerListButton);
 
-        loadList();
+        loadFlights();
 
         viewPassengerListButton.addActionListener(e -> {
             String selectedFlightInfo = (String) flightComboBox.getSelectedItem();
-            String selectedFlightNumber = flightController.extractFlightNumber(selectedFlightInfo);
+            String selectedFlightNumber = extractFlightNumber(selectedFlightInfo);
 
             // Open the PassengerListFrame for the selected flight
             new PassengerListFrame(selectedFlightNumber, databaseConnector).setVisible(true);
@@ -41,16 +42,31 @@ public class FlightAttendantFrame extends JFrame implements ListLoader, Printer 
         setVisible(true);
     }
 
-    @Override
-    public void loadList() {
-        List<Item> flightList = itemLoader.loadFlights();
-        displayItems(flightList);
-    }
-
-    @Override
-    public void displayItems(List<Item> items) {
-        for (Item item : items) {
-            flightComboBox.addItem(item.getText());
+    private void loadFlights() {
+        try (Connection connection = databaseConnector.getConnection()) {
+            String query = "SELECT FlightNumber, Origin, Destination FROM Flights";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    String flightInfo = resultSet.getString("FlightNumber") + " - " +
+                            resultSet.getString("Origin") + " to " +
+                            resultSet.getString("Destination");
+                    flightComboBox.addItem(flightInfo);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
     }
+
+    private String extractFlightNumber(String flightInfo) {
+        int endIndex = flightInfo.indexOf(" -");
+        if (endIndex != -1) {
+            return flightInfo.substring(0, endIndex);
+        } else {
+            return flightInfo;
+        }
+    }
+
+
 }

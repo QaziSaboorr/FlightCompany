@@ -2,6 +2,8 @@
 // ManageCrewFrame.java
 import javax.swing.*;
 
+
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,13 +14,14 @@ import java.sql.SQLException;
 
 
 
-public class ManageCrewFrame extends JFrame implements ListLoader{
+public class ManageCrewFrame extends JFrame {
     private JTextField crewNameField;
     private JComboBox<String> flightComboBox;
     private JButton addButton;
     private JButton removeButton; // Added Remove Crew button
     private DatabaseConnector databaseConnector;
     private JComboBox<String> crewDropdown; // Added crew dropdown
+    private JComboBox<String> flightDropdown; // Added flight dropdown  
 
     public ManageCrewFrame(DatabaseConnector databaseConnector) {
         this.databaseConnector = databaseConnector;
@@ -36,11 +39,11 @@ public class ManageCrewFrame extends JFrame implements ListLoader{
 
         // Added crew and flight dropdowns
         crewDropdown = new JComboBox<>();
-
+        flightDropdown = new JComboBox<>();
 
         // Load flight numbers and crews into the combo boxes
-        loadList();
-        loadList();
+        loadFlightNumbers();
+        loadCrewsAndFlights();
 
         // Create the form layout
         setLayout(new GridLayout(5, 2));
@@ -96,8 +99,7 @@ public class ManageCrewFrame extends JFrame implements ListLoader{
     }   
 
     // Function to load flight numbers into the combo box
-    @Override
-    public void loadList() {
+    private void loadFlightNumbers() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT FlightNumber FROM Flights";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -156,13 +158,14 @@ public class ManageCrewFrame extends JFrame implements ListLoader{
                 crewNameField.setText(""); // Clear the input field after adding
                 // Reload the crews and flights into the dropdown for an updated view
                 crewDropdown.removeAllItems();
-                loadList();
+                loadCrewsAndFlights();
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error adding crew.");
         }
     }
+
 
     // Function to load crews and their associated flights into the dropdown menu
     private void loadCrewsAndFlights() {

@@ -1,6 +1,5 @@
 
 
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -15,6 +14,7 @@ public class DatabaseConnector {
 
     // Private constructor to prevent instantiation
     private DatabaseConnector() {
+        // Optional: You can include initialization code here
     }
 
     // Public static method to get the singleton instance
