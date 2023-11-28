@@ -6,15 +6,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
-public class FlightSelectionFrame extends JFrame implements Loader {
+public class FlightSelectionFrame extends JFrame implements ListLoader{
     private JComboBox<String> flightComboBox;
     private JButton selectFlightButton;
-    private JButton showPassengerListButton;  // New button for showing passenger list
+    private JButton showPassengerListButton;
     private UserType userType;
     private DatabaseConnector databaseConnector;
 
     private FlightSelectionController flightSelectionController;
+
+    private ItemLoader itemLoader;
 
     public FlightSelectionFrame(UserType userType, DatabaseConnector databaseConnector) {
         this.userType = userType;
@@ -44,6 +47,16 @@ public class FlightSelectionFrame extends JFrame implements Loader {
             showPassengerListButton.addActionListener(e -> openPassengerListFrame());
         }
 
+        // loadList();
+
+        // selectFlightButton.addActionListener(e -> {
+        //     String selectedFlightInfo = (String) flightComboBox.getSelectedItem();
+        //     String selectedFlightNumber = extractFlightNumber(selectedFlightInfo);
+
+        //     new SeatSelectionFrame(selectedFlightNumber, userType, databaseConnector).setVisible(true);
+        //     this.dispose();
+        // });
+
         loadList();
 
         selectFlightButton.addActionListener(e -> {
@@ -63,21 +76,17 @@ public class FlightSelectionFrame extends JFrame implements Loader {
         setVisible(true);
     }
 
+
     @Override
     public void loadList() {
-        try (Connection connection = databaseConnector.getConnection()) {
-            String query = "SELECT FlightNumber, Origin, Destination FROM Flights WHERE FlightNumber IS NOT NULL";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    String flightInfo = resultSet.getString("FlightNumber") + " - " +
-                            resultSet.getString("Origin") + " to " +
-                            resultSet.getString("Destination");
-                    flightComboBox.addItem(flightInfo);
-                }
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+        List<Item> flightList = itemLoader.loadFlights();
+        displayItems(flightList);
+    }
+
+
+    public void displayItems(List<Item> items) {
+        for (Item item : items) {
+            flightComboBox.addItem(item.getText());
         }
     }
 
@@ -96,3 +105,6 @@ public class FlightSelectionFrame extends JFrame implements Loader {
         new PassengerListFrame(selectedFlightNumber, databaseConnector).setVisible(true);
     }
 }
+
+
+

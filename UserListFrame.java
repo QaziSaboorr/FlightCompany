@@ -6,7 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class UserListFrame extends JFrame implements Loader{
+public class UserListFrame extends JFrame implements ListLoader{
     private JList<String> userList;
     private DatabaseConnector databaseConnector;
 

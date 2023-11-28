@@ -7,7 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class PassengerListFrame extends JFrame implements Loader{
+public class PassengerListFrame extends JFrame implements ListLoader{
     private JTextArea passengerListArea;
     private DatabaseConnector databaseConnector;
     private String selectedFlight;

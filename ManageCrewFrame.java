@@ -12,7 +12,7 @@ import java.sql.SQLException;
 
 
 
-public class ManageCrewFrame extends JFrame implements Loader {
+public class ManageCrewFrame extends JFrame {
     private JTextField crewNameField;
     private JComboBox<String> flightComboBox;
     private JButton addButton;
@@ -96,7 +96,6 @@ public class ManageCrewFrame extends JFrame implements Loader {
     }   
 
     // Function to load flight numbers into the combo box
-    @Override
     public void loadList() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT FlightNumber FROM Flights";

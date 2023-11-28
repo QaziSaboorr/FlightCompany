@@ -10,7 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ManageFlightsFrame extends JFrame implements Loader{
+public class ManageFlightsFrame extends JFrame {
     private JTextField flightNumberField;
     private JTextField originField;
     private JComboBox<String> destinationComboBox;
@@ -79,7 +79,6 @@ public class ManageFlightsFrame extends JFrame implements Loader{
     }
 
     // Function to load destination names into the combo box
-    @Override
     public void loadList() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT DestinationName FROM Destinations";
