@@ -169,15 +169,19 @@ public class TicketConfirmationFrame extends JFrame {
                 // Check if a companion ticket is redeemed
                 boolean useCompanionTicket = checkCompanionTicketUsage();
     
+                if (!useCompanionTicket) {
+                    redeemCompanionTicket(); // Prompt for companion ticket redemption
+                }
+    
                 // Adjust seat price based on the companion ticket redemption
                 if (useCompanionTicket) {
-                    seatPrice = 0.0; // The ticket is free if a companion ticket is redeemed
+                    seatPrice = 0.0; // The original ticket is free if a companion ticket is redeemed
                     insuranceSelected = false; // Companion ticket comes with free insurance
                 } else if (insuranceSelected) {
                     seatPrice += 20.0; // Increment seat price if insurance is selected
                 }
     
-                // Insert data into the Tickets table
+                // Insert data into the Tickets table for the original ticket
                 String ticketInsertQuery = "INSERT INTO Tickets (UserID, Email, UserName, FlightID, SeatID, SeatType, SeatNumber, Destination, InsuranceSelected, PaymentAmount) " +
                         "VALUES (?, ?, ?, (SELECT FlightID FROM Flights WHERE FlightNumber = ? LIMIT 1), " +
                         "(SELECT SeatID FROM Seats WHERE SeatNumber = ? LIMIT 1), ?, ?, " +
@@ -196,12 +200,12 @@ public class TicketConfirmationFrame extends JFrame {
                     ticketPreparedStatement.setDouble(10, seatPrice);
                     ticketPreparedStatement.executeUpdate();
     
-                    // Retrieve the auto-generated ticket ID
+                    // Retrieve the auto-generated ticket ID for the original ticket
                     try (ResultSet generatedKeys = ticketPreparedStatement.getGeneratedKeys()) {
-                        if (generatedKeys.next()) { 
+                        if (generatedKeys.next()) {
                             int ticketID = generatedKeys.getInt(1);
     
-                            // Insert data into the Passengers table
+                            // Insert data into the Passengers table for the original ticket
                             String passengerInsertQuery = "INSERT INTO Passengers (TicketID, FlightID, PassengerName) VALUES (?, (SELECT FlightID FROM Flights WHERE FlightNumber = ? LIMIT 1), ?)";
                             try (PreparedStatement passengerPreparedStatement = connection.prepareStatement(passengerInsertQuery)) {
                                 passengerPreparedStatement.setInt(1, ticketID);
@@ -210,7 +214,7 @@ public class TicketConfirmationFrame extends JFrame {
                                 passengerPreparedStatement.executeUpdate();
                             }
     
-                            // Insert data into the Payments table
+                            // Insert data into the Payments table for the original ticket
                             String paymentInsertQuery = "INSERT INTO Payments (TicketID, PaymentAmount) VALUES (?, ?)";
                             try (PreparedStatement paymentPreparedStatement = connection.prepareStatement(paymentInsertQuery)) {
                                 paymentPreparedStatement.setInt(1, ticketID);
@@ -218,7 +222,7 @@ public class TicketConfirmationFrame extends JFrame {
                                 paymentPreparedStatement.executeUpdate();
                             }
                         } else {
-                            throw new SQLException("Failed to retrieve the generated ticket ID.");
+                            throw new SQLException("Failed to retrieve the generated ticket ID for the original ticket.");
                         }
                     }
                 }
@@ -231,6 +235,7 @@ public class TicketConfirmationFrame extends JFrame {
         JOptionPane.showMessageDialog(this, "Ticket Confirmed!");
         dispose();
     }
+    
     
     
     private void cancelTicket() {
@@ -263,6 +268,57 @@ public class TicketConfirmationFrame extends JFrame {
 
     public boolean isInsuranceSelected() {
         return insuranceSelected;
+    }
+    
+    private void redeemCompanionTicket() {
+        int option = JOptionPane.showConfirmDialog(this,
+                "You have a free companion ticket available. Do you want to redeem it?", "Companion Ticket Redemption",
+                JOptionPane.YES_NO_OPTION);
+    
+        if (option == JOptionPane.YES_OPTION) {
+            // Allow the user to choose a seat for the companion ticket
+            String newSeatNumber = JOptionPane.showInputDialog(this, "Choose a seat for the companion ticket:");
+    
+            // Confirm the redemption and create the new ticket
+            if (newSeatNumber != null && !newSeatNumber.isEmpty()) {
+                createCompanionTicket(newSeatNumber);
+            } else {
+                JOptionPane.showMessageDialog(this, "Seat selection is required.");
+            }
+        }
+    }
+    
+    private void createCompanionTicket(String newSeatNumber) {
+        // Logic to create a new ticket for the same flight with the chosen seat
+        // Set seatPrice to 0 for the companion ticket
+        double companionTicketPrice = 0.0;
+    
+        // Insert data into the Tickets table for the companion ticket
+        String companionTicketInsertQuery = "INSERT INTO Tickets (UserID, Email, UserName, FlightID, SeatID, SeatType, SeatNumber, Destination, InsuranceSelected, PaymentAmount) " +
+                "VALUES (?, ?, ?, (SELECT FlightID FROM Flights WHERE FlightNumber = ? LIMIT 1), " +
+                "(SELECT SeatID FROM Seats WHERE SeatNumber = ? LIMIT 1), ?, ?, " +
+                "(SELECT Destination FROM Flights WHERE FlightNumber = ? LIMIT 1), ?, ?)";
+    
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement companionTicketPreparedStatement = connection.prepareStatement(companionTicketInsertQuery, PreparedStatement.RETURN_GENERATED_KEYS)) {
+    
+            companionTicketPreparedStatement.setInt(1, userType.ordinal() + 1);
+            companionTicketPreparedStatement.setString(2, getUserEmail());
+            companionTicketPreparedStatement.setString(3, getUserName());
+            companionTicketPreparedStatement.setString(4, selectedFlight);
+            companionTicketPreparedStatement.setString(5, newSeatNumber);
+            companionTicketPreparedStatement.setString(6, seatType);
+            companionTicketPreparedStatement.setString(7, newSeatNumber);
+            companionTicketPreparedStatement.setString(8, selectedFlight);
+            companionTicketPreparedStatement.setBoolean(9, false); // Companion ticket does not have insurance
+            companionTicketPreparedStatement.setDouble(10, companionTicketPrice);
+            companionTicketPreparedStatement.executeUpdate();
+    
+            // Additional logic for companion ticket confirmation (e.g., sending email)
+            JOptionPane.showMessageDialog(this, "Companion Ticket Redeemed!");
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
     
 }
