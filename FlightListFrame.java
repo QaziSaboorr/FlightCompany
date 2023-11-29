@@ -1,20 +1,14 @@
-
 // FlightListFrame.java
 import javax.swing.*;
-
-
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.List;
 
-public class FlightListFrame extends JFrame {
+public class FlightListFrame extends JFrame implements ListLoader, Printer {
     private JTextArea flightListArea;
-    private DatabaseConnector databaseConnector;
+    private ItemLoader itemLoader;
 
     public FlightListFrame(DatabaseConnector databaseConnector) {
-        this.databaseConnector = databaseConnector;
+        this.itemLoader = new ItemLoader(databaseConnector);
 
         setTitle("Flight Reservation - Flight List");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -35,27 +29,21 @@ public class FlightListFrame extends JFrame {
         add(scrollPane, BorderLayout.CENTER);
 
         // Load and display the list of flights
-        loadFlights();
+        loadList();
     }
 
-    // Function to load and display the list of flights from the database
-    private void loadFlights() {
-        try (Connection connection = databaseConnector.getConnection()) {
-            String query = "SELECT FlightNumber, Origin, Destination FROM Flights";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                StringBuilder flightList = new StringBuilder();
-                while (resultSet.next()) {
-                    String flightInfo = resultSet.getString("FlightNumber") + " - " +
-                            resultSet.getString("Origin") + " to " +
-                            resultSet.getString("Destination");
-                    flightList.append(flightInfo).append("\n");
-                }
-                flightListArea.setText(flightList.toString());
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error loading flight list.");
+    @Override
+    public void loadList() {
+        List<Item> flightList = itemLoader.loadFlights();
+        displayItems(flightList);
+    }
+
+    @Override
+    public void displayItems(List<Item> items) {
+        StringBuilder itemText = new StringBuilder();
+        for (Item item : items) {
+            itemText.append(item.getText()).append("\n");
         }
+        flightListArea.setText(itemText.toString());
     }
 }

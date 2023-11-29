@@ -20,8 +20,12 @@ public class ManageFlightsFrame extends JFrame {
     private JButton removeButton;
     private DatabaseConnector databaseConnector;
 
+    private ManageController manageController;
+
     public ManageFlightsFrame(DatabaseConnector databaseConnector) {
         this.databaseConnector = databaseConnector;
+
+        this.manageController = new ManageController(databaseConnector);
 
         setTitle("Flight Reservation - Manage Flights");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -148,7 +152,7 @@ public class ManageFlightsFrame extends JFrame {
                 preparedStatement.executeUpdate();
     
                 // Get the FlightID for the newly added flight
-                int newFlightID = getFlightID(connection, flightNumber);
+                int newFlightID = manageController.getFlightID(connection, flightNumber);
     
                 // Add seats for the new flight
                 addSeatsForFlight(connection, newFlightID);
@@ -174,19 +178,19 @@ public class ManageFlightsFrame extends JFrame {
         }
     }
     
-    // Function to get the FlightID for a given flight number
-    private int getFlightID(Connection connection, String flightNumber) throws SQLException {
-        String query = "SELECT FlightID FROM Flights WHERE FlightNumber = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, flightNumber);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getInt("FlightID");
-                }
-            }
-        }
-        return -1; // Return -1 if FlightID is not found (should not happen in a well-formed database)
-    }
+    // // Function to get the FlightID for a given flight number
+    // private int getFlightID(Connection connection, String flightNumber) throws SQLException {
+    //     String query = "SELECT FlightID FROM Flights WHERE FlightNumber = ?";
+    //     try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+    //         preparedStatement.setString(1, flightNumber);
+    //         try (ResultSet resultSet = preparedStatement.executeQuery()) {
+    //             if (resultSet.next()) {
+    //                 return resultSet.getInt("FlightID");
+    //             }
+    //         }
+    //     }
+    //     return -1; // Return -1 if FlightID is not found (should not happen in a well-formed database)
+    // }
     
     
 

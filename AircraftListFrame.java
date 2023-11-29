@@ -1,20 +1,15 @@
 
 // AircraftListFrame.java
 import javax.swing.*;
-
-
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.List;
 
-public class AircraftListFrame extends JFrame {
+public class AircraftListFrame extends JFrame implements ListLoader, Printer {
     private JTextArea aircraftListArea;
-    private DatabaseConnector databaseConnector;
+    private ItemLoader itemLoader;
 
     public AircraftListFrame(DatabaseConnector databaseConnector) {
-        this.databaseConnector = databaseConnector;
+        this.itemLoader = new ItemLoader(databaseConnector);
 
         setTitle("Flight Reservation - Aircraft List");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -35,25 +30,21 @@ public class AircraftListFrame extends JFrame {
         add(scrollPane, BorderLayout.CENTER);
 
         // Load and display the list of aircrafts
-        loadAircrafts();
+        loadList();
     }
 
-    // Function to load and display the list of aircrafts from the database
-    private void loadAircrafts() {
-        try (Connection connection = databaseConnector.getConnection()) {
-            String query = "SELECT AircraftNumber FROM Aircrafts";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                StringBuilder aircraftList = new StringBuilder();
-                while (resultSet.next()) {
-                    String aircraftInfo = resultSet.getString("AircraftNumber");
-                    aircraftList.append(aircraftInfo).append("\n");
-                }
-                aircraftListArea.setText(aircraftList.toString());
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error loading aircraft list.");
+    @Override
+    public void loadList() {
+        List<Item> aircraftList = itemLoader.loadAircrafts();
+        displayItems(aircraftList);
+    }
+
+    @Override
+    public void displayItems(List<Item> items) {
+        StringBuilder itemText = new StringBuilder();
+        for (Item item : items) {
+            itemText.append(item.getText()).append("\n");
         }
+        aircraftListArea.setText(itemText.toString());
     }
 }

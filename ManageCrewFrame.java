@@ -23,8 +23,12 @@ public class ManageCrewFrame extends JFrame {
     private JComboBox<String> crewDropdown; // Added crew dropdown
     private JComboBox<String> flightDropdown; // Added flight dropdown  
 
+    private ManageController manageController;
+
     public ManageCrewFrame(DatabaseConnector databaseConnector) {
         this.databaseConnector = databaseConnector;
+
+        this.manageController = new ManageController(databaseConnector);
 
         setTitle("Flight Reservation - Manage Crew");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -42,8 +46,8 @@ public class ManageCrewFrame extends JFrame {
         flightDropdown = new JComboBox<>();
 
         // Load flight numbers and crews into the combo boxes
-        loadFlightNumbers();
-        loadCrewsAndFlights();
+        manageController.loadFlightNumbers(flightComboBox);
+        manageController.loadCrewsAndFlights(crewDropdown);
 
         // Create the form layout
         setLayout(new GridLayout(5, 2));
@@ -98,22 +102,22 @@ public class ManageCrewFrame extends JFrame {
         return null; // Return null if there is no existing crew
     }   
 
-    // Function to load flight numbers into the combo box
-    private void loadFlightNumbers() {
-        try (Connection connection = databaseConnector.getConnection()) {
-            String query = "SELECT FlightNumber FROM Flights";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    String flightNumber = resultSet.getString("FlightNumber");
-                    flightComboBox.addItem(flightNumber);
-                }
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error loading flight numbers.");
-        }
-    }
+    // // Function to load flight numbers into the combo box
+    // private void loadFlightNumbers() {
+    //     try (Connection connection = databaseConnector.getConnection()) {
+    //         String query = "SELECT FlightNumber FROM Flights";
+    //         try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+    //              ResultSet resultSet = preparedStatement.executeQuery()) {
+    //             while (resultSet.next()) {
+    //                 String flightNumber = resultSet.getString("FlightNumber");
+    //                 flightComboBox.addItem(flightNumber);
+    //             }
+    //         }
+    //     } catch (SQLException ex) {
+    //         ex.printStackTrace();
+    //         JOptionPane.showMessageDialog(this, "Error loading flight numbers.");
+    //     }
+    // }
 
     // Function to add a new crew to the database
     private void addCrew() {
@@ -127,7 +131,7 @@ public class ManageCrewFrame extends JFrame {
 
         try (Connection connection = databaseConnector.getConnection()) {
             // Get the FlightID for the selected flight number
-            int flightID = getFlightID(connection, flightNumber);
+            int flightID = manageController.getFlightID(connection, flightNumber);
 
             // Check if there is an existing crew for the selected flight
             String existingCrew = getExistingCrew(connection, flightID);
@@ -158,7 +162,7 @@ public class ManageCrewFrame extends JFrame {
                 crewNameField.setText(""); // Clear the input field after adding
                 // Reload the crews and flights into the dropdown for an updated view
                 crewDropdown.removeAllItems();
-                loadCrewsAndFlights();
+                manageController.loadCrewsAndFlights(crewDropdown);
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -167,26 +171,26 @@ public class ManageCrewFrame extends JFrame {
     }
 
 
-    // Function to load crews and their associated flights into the dropdown menu
-    private void loadCrewsAndFlights() {
-        try (Connection connection = databaseConnector.getConnection()) {
-            String query = "SELECT c.CrewID, c.Name, f.FlightNumber " +
-                        "FROM Crews c " +
-                        "LEFT JOIN Flights f ON c.FlightID = f.FlightID";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query);
-                ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    String crewInfo = resultSet.getString("Name") + " - " +
-                                    (resultSet.getString("FlightNumber") != null ?
-                                            resultSet.getString("FlightNumber") : "No Flight");
-                    crewDropdown.addItem(crewInfo);
-                }
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error loading crews and flights.");
-        }
-    }
+    // // Function to load crews and their associated flights into the dropdown menu
+    // private void loadCrewsAndFlights() {
+    //     try (Connection connection = databaseConnector.getConnection()) {
+    //         String query = "SELECT c.CrewID, c.Name, f.FlightNumber " +
+    //                     "FROM Crews c " +
+    //                     "LEFT JOIN Flights f ON c.FlightID = f.FlightID";
+    //         try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+    //             ResultSet resultSet = preparedStatement.executeQuery()) {
+    //             while (resultSet.next()) {
+    //                 String crewInfo = resultSet.getString("Name") + " - " +
+    //                                 (resultSet.getString("FlightNumber") != null ?
+    //                                         resultSet.getString("FlightNumber") : "No Flight");
+    //                 crewDropdown.addItem(crewInfo);
+    //             }
+    //         }
+    //     } catch (SQLException ex) {
+    //         ex.printStackTrace();
+    //         JOptionPane.showMessageDialog(this, "Error loading crews and flights.");
+    //     }
+    // }
 
 
 
@@ -221,7 +225,7 @@ public class ManageCrewFrame extends JFrame {
                         crewDropdown.removeItem(selectedCrewInfo); // Remove the crew from the dropdown
                         // Reload the crews and flights into the dropdown for an updated view
                         crewDropdown.removeAllItems();
-                        loadCrewsAndFlights();
+                        manageController.loadCrewsAndFlights(crewDropdown);
                     } else {
                         JOptionPane.showMessageDialog(this, "Crew not found.");
                     }
@@ -237,17 +241,17 @@ public class ManageCrewFrame extends JFrame {
 
 
 
-    // Function to get the FlightID for a given flight number
-    private int getFlightID(Connection connection, String flightNumber) throws SQLException {
-        String query = "SELECT FlightID FROM Flights WHERE FlightNumber = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, flightNumber);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getInt("FlightID");
-                }
-            }
-        }
-        return -1; // Return -1 if FlightID is not found (should not happen in a well-formed database)
-    }
+    // // Function to get the FlightID for a given flight number
+    // private int getFlightID(Connection connection, String flightNumber) throws SQLException {
+    //     String query = "SELECT FlightID FROM Flights WHERE FlightNumber = ?";
+    //     try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+    //         preparedStatement.setString(1, flightNumber);
+    //         try (ResultSet resultSet = preparedStatement.executeQuery()) {
+    //             if (resultSet.next()) {
+    //                 return resultSet.getInt("FlightID");
+    //             }
+    //         }
+    //     }
+    //     return -1; // Return -1 if FlightID is not found (should not happen in a well-formed database)
+    // }
 }
