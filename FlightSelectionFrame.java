@@ -38,7 +38,7 @@ public class FlightSelectionFrame extends JFrame {
         if (userType == UserType.AirlineAgent) {
             add(showPassengerListButton);
             showPassengerListButton.addActionListener(e -> openPassengerListFrame());
-        }
+        } 
 
         loadFlights();
 

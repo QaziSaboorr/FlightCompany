@@ -1,8 +1,17 @@
+import javax.mail.MessagingException;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Properties;
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import java.util.Properties;
 
 class PaymentFrame extends JFrame {
     private TicketConfirmationFrame ticketConfirmationFrame;
@@ -88,7 +97,8 @@ class PaymentFrame extends JFrame {
 
         // Call the confirmTicket method in the TicketConfirmationFrame
         ticketConfirmationFrame.confirmTicket();
-
+        // Send confirmation email
+        // sendConfirmationEmail();
         JOptionPane.showMessageDialog(this, "Purchase Confirmed!");
         dispose(); // Close the payment frame
     }
@@ -125,6 +135,9 @@ class PaymentFrame extends JFrame {
             ex.printStackTrace();
         }
     }
-    
+
+
+
+
 }
 

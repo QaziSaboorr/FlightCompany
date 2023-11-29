@@ -255,21 +255,32 @@ public class LoginFrame extends JFrame {
     
     private void cancelTicket(String username) {
         // Update the logic to cancel the user's ticket and set the cancellation date
-        String updateQuery = "UPDATE Tickets SET IsCancelled = true, CancellationDate = ?, SeatID = null WHERE UserName = ?";
-        
+        String updateTicketQuery = "UPDATE Tickets SET IsCancelled = true, CancellationDate = ?, SeatID = null WHERE UserName = ?";
+        String updatePassengerQuery = "UPDATE Passengers SET FlightID = 0, PassengerName = null WHERE PassengerID = ?";
+    
         try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
+             PreparedStatement updateTicketStatement = connection.prepareStatement(updateTicketQuery);
+             PreparedStatement updatePassengerStatement = connection.prepareStatement(updatePassengerQuery)) {
             // Set the cancellation date parameter to the current date and time
             Timestamp cancellationDate = new Timestamp(new Date().getTime());
-            preparedStatement.setTimestamp(1, cancellationDate);
-            
+            updateTicketStatement.setTimestamp(1, cancellationDate);
+    
             // Set the username parameter
-            preparedStatement.setString(2, username);
-            
-            int rowsAffected = preparedStatement.executeUpdate();
-        
+            updateTicketStatement.setString(2, username);
+    
+            int rowsAffected = updateTicketStatement.executeUpdate();
+    
             if (rowsAffected > 0) {
-                JOptionPane.showMessageDialog(this, "Ticket Cancelled!");
+                // Get the PassengerID associated with the canceled ticket
+                int passengerID = getPassengerID(username, connection);
+    
+                if (passengerID > 0) {
+                    // Update the Passengers table with FlightID set to 0 and PassengerName set to null
+                    updatePassengerStatement.setInt(1, passengerID);
+                    updatePassengerStatement.executeUpdate();
+                }
+    
+                JOptionPane.showMessageDialog(this, "Ticket Canceled! Passenger information updated.");
                 revalidate();
                 repaint();
             } else {
@@ -279,6 +290,23 @@ public class LoginFrame extends JFrame {
             e.printStackTrace();
         }
     }
+    
+    private int getPassengerID(String username, Connection connection) throws SQLException {
+        // Retrieve the PassengerID associated with the given username
+        String passengerIDQuery = "SELECT PassengerID FROM Passengers WHERE UserName = ?";
+        try (PreparedStatement passengerIDStatement = connection.prepareStatement(passengerIDQuery)) {
+            passengerIDStatement.setString(1, username);
+            try (ResultSet resultSet = passengerIDStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("PassengerID");
+                }
+            }
+        }
+    
+        // Return -1 if no PassengerID is found
+        return -1;
+    }
+    
     
     private void openUserRegistrationFrame() {
         UserRegistrationFrame registrationFrame = new UserRegistrationFrame(databaseConnector, this);
