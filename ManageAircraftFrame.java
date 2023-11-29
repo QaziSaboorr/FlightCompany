@@ -170,23 +170,4 @@ private void removeAircraft() {
     }
 
 
-//     private void loadAircraftAndFlights() {
-//         try (Connection connection = databaseConnector.getConnection()) {
-//             String query = "SELECT a.AircraftNumber, f.FlightNumber " +
-//                     "FROM Aircrafts a " +
-//                     "LEFT JOIN Flights f ON a.AircraftID = f.AircraftID";
-//             try (PreparedStatement preparedStatement = connection.prepareStatement(query);
-//                  ResultSet resultSet = preparedStatement.executeQuery()) {
-//                 while (resultSet.next()) {
-//                     String aircraftNumber = resultSet.getString("AircraftNumber");
-//                     String flightNumber = resultSet.getString("FlightNumber");
-//                     String aircraftInfo = aircraftNumber + " - " + (flightNumber != null ? flightNumber : "No Flight");
-//                     aircraftDropdown.addItem(aircraftInfo);
-//                 }
-//             }
-//         } catch (SQLException ex) {
-//             ex.printStackTrace();
-//             JOptionPane.showMessageDialog(this, "Error loading aircraft and flight information.");
-//         }
-//     }
 }
