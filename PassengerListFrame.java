@@ -7,10 +7,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-// Interface for classes that load and display lists
-interface ListLoader {
-    void loadList();
-}
 
 public class PassengerListFrame extends JFrame implements ListLoader {
     private JTextArea passengerListArea;
