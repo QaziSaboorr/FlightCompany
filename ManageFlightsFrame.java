@@ -221,21 +221,21 @@ public class ManageFlightsFrame extends JFrame {
 
     private void removeFlight(String flightNumber) {
         try (Connection connection = databaseConnector.getConnection()) {
-            // Delete the flight information from the Flights table
-            String query = "DELETE FROM Flights WHERE FlightNumber = ?";
+            // Update the flight information in the Flights table and set the entire row to null
+            String query = "UPDATE Flights SET FlightNumber = null, Origin = null, Destination = null, AircraftID = 0 WHERE FlightNumber = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, flightNumber);
-                int rowsDeleted = preparedStatement.executeUpdate();
+                int rowsUpdated = preparedStatement.executeUpdate();
     
-                if (rowsDeleted > 0) {
-                    JOptionPane.showMessageDialog(this, "Flight removed successfully.");
+                if (rowsUpdated > 0) {
+                    JOptionPane.showMessageDialog(this, "Flight information removed successfully.");
                 } else {
                     JOptionPane.showMessageDialog(this, "Flight not found with the given flight number.");
                 }
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error removing flight.");
+            JOptionPane.showMessageDialog(this, "Error removing flight information.");
         }
     }
     

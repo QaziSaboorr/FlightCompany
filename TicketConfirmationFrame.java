@@ -168,10 +168,12 @@ public class TicketConfirmationFrame extends JFrame {
             try (Connection connection = databaseConnector.getConnection()) {
                 // Check if a companion ticket is redeemed
                 boolean useCompanionTicket = checkCompanionTicketUsage();
-    
-                if (!useCompanionTicket) {
-                    redeemCompanionTicket(); // Prompt for companion ticket redemption
+                if (getUserType() == UserType.Registered){
+                    if (!useCompanionTicket ) {
+                        redeemCompanionTicket(); // Prompt for companion ticket redemption
+                    }
                 }
+
     
                 // Adjust seat price based on the companion ticket redemption
                 if (useCompanionTicket) {
@@ -242,21 +244,31 @@ public class TicketConfirmationFrame extends JFrame {
         try {
             // Use the shared database connector
             try (Connection connection = databaseConnector.getConnection()) {
-                String query = "UPDATE Tickets SET IsCancelled = TRUE, CancellationDate = NOW() WHERE UserID = ? AND FlightID = (SELECT FlightID FROM Flights WHERE FlightNumber = ? LIMIT 1)";
-                try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                    preparedStatement.setInt(1, userType.ordinal() + 1);
-                    preparedStatement.setString(2, selectedFlight);
-                    preparedStatement.executeUpdate();
+                // Update the Tickets table
+                String ticketQuery = "UPDATE Tickets SET IsCancelled = TRUE, CancellationDate = NOW() WHERE UserID = ? AND FlightID = (SELECT FlightID FROM Flights WHERE FlightNumber = ? LIMIT 1)";
+                try (PreparedStatement ticketPreparedStatement = connection.prepareStatement(ticketQuery)) {
+                    ticketPreparedStatement.setInt(1, userType.ordinal() + 1);
+                    ticketPreparedStatement.setString(2, selectedFlight);
+                    ticketPreparedStatement.executeUpdate();
+                }
+    
+                // Update the Passengers table
+                String passengerQuery = "UPDATE Passengers SET PassengerID = 0, PassengerName = null WHERE TicketID IN (SELECT TicketID FROM Tickets WHERE UserID = ? AND FlightID = (SELECT FlightID FROM Flights WHERE FlightNumber = ? LIMIT 1))";
+                try (PreparedStatement passengerPreparedStatement = connection.prepareStatement(passengerQuery)) {
+                    passengerPreparedStatement.setInt(1, userType.ordinal() + 1);
+                    passengerPreparedStatement.setString(2, selectedFlight);
+                    passengerPreparedStatement.executeUpdate();
                 }
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
-
+    
         // Additional logic for ticket cancellation (e.g., updating UI)
         JOptionPane.showMessageDialog(this, "Ticket Cancelled!");
         dispose();
     }
+    
 
 
     private void proceedToPayment() {

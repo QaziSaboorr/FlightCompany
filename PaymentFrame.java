@@ -35,10 +35,18 @@ class PaymentFrame extends JFrame {
 
         JLabel amountLabel = new JLabel("Payment Amount:");
         panel.add(amountLabel);
-
+        
+        double paySeatPrice = seatPrice;
+        double insSeatPrice = paySeatPrice + 20.0;
         // Display the payment amount from seatPrice
-        paymentAmountLabel = new JLabel("$" + seatPrice);
-        panel.add(paymentAmountLabel);
+        if (ticketConfirmationFrame.isInsuranceSelected()) {
+            paymentAmountLabel = new JLabel("$" + insSeatPrice );
+            panel.add(paymentAmountLabel);
+
+        }else{
+            paymentAmountLabel = new JLabel("$" + paySeatPrice);
+            panel.add(paymentAmountLabel);
+        }
 
         // Credit card number label
         JLabel cardNumberLabel = new JLabel("Credit Card Number:");
@@ -55,6 +63,14 @@ class PaymentFrame extends JFrame {
         // Text field for expiry date input (adjust as needed)
         JTextField expiryDateField = new JTextField();
         panel.add(expiryDateField);
+
+        // CVV label
+        JLabel cvvLabel = new JLabel("CVV:");
+        panel.add(cvvLabel);
+
+        // Text field for expiry date input (adjust as needed)
+        JTextField cvvField = new JTextField();
+        panel.add(cvvField);
 
         // Confirm Purchase button
         JButton confirmPurchaseButton = new JButton("Confirm Purchase");
@@ -111,3 +127,4 @@ class PaymentFrame extends JFrame {
     }
     
 }
+

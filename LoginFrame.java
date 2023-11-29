@@ -200,119 +200,74 @@ public class LoginFrame extends JFrame {
     }
     
     private void displayUserTicket(String username) {
-        // Query to retrieve all tickets based on the user's username
+        // Query to retrieve ticket information based on the user's username
         String query = "SELECT * FROM Tickets WHERE UserName = ?";
-        
+    
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, username);
-        
+    
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    // Display each ticket information
-                    do {
-                        int ticketID = resultSet.getInt("TicketID");
-                        boolean isCompanionTicket = resultSet.getBoolean("IsCompanionTicket");
+                    // Extract ticket information from the ResultSet
+                    int ticketID = resultSet.getInt("TicketID");
+                    int userID = resultSet.getInt("UserID");
+                    String email = resultSet.getString("Email");
+                    String flightID = resultSet.getString("FlightID");
+                    int seatID = resultSet.getInt("SeatID");
+                    String seatType = resultSet.getString("SeatType");
+                    String seatNumber = resultSet.getString("SeatNumber");
+                    String destination = resultSet.getString("Destination");
+                    boolean isCancelled = resultSet.getBoolean("IsCancelled");
+                    boolean insuranceSelected = resultSet.getBoolean("InsuranceSelected");
+                    double paymentAmount = resultSet.getDouble("PaymentAmount");
+                    boolean emailSent = resultSet.getBoolean("EmailSent");
+                    boolean receiptSent = resultSet.getBoolean("ReceiptSent");
     
-                        // Build ticket information
-                        StringBuilder ticketInfo = new StringBuilder();
-                        ticketInfo.append("Ticket ID: ").append(ticketID).append("\n");
-                        // ... (other ticket details)
+                    // Display the ticket information
+                    StringBuilder ticketInfo = new StringBuilder();
+                    ticketInfo.append("Ticket ID: ").append(ticketID).append("\n");
+                    ticketInfo.append("User ID: ").append(userID).append("\n");
+                    ticketInfo.append("Email: ").append(email).append("\n");
+                    ticketInfo.append("Flight ID: ").append(flightID).append("\n");
+                    ticketInfo.append("Seat ID: ").append(seatID).append("\n");
+                    ticketInfo.append("Seat Type: ").append(seatType).append("\n");
+                    ticketInfo.append("Seat Number: ").append(seatNumber).append("\n");
+                    ticketInfo.append("Destination: ").append(destination).append("\n");
+                    ticketInfo.append("Is Cancelled: ").append(isCancelled).append("\n");
+                    ticketInfo.append("Insurance Selected: ").append(insuranceSelected).append("\n");
+                    ticketInfo.append("Payment Amount: $").append(paymentAmount).append("\n");
+                    ticketInfo.append("Email Sent: ").append(emailSent).append("\n");
+                    ticketInfo.append("Receipt Sent: ").append(receiptSent).append("\n");
     
-                        if (isCompanionTicket) {
-                            ticketInfo.append("Ticket Type: Companion Ticket").append("\n");
-                        } else {
-                            ticketInfo.append("Ticket Type: Regular Ticket").append("\n");
-                        }
-    
-                        // Display the ticket information using JOptionPane
-                        JOptionPane.showMessageDialog(this, ticketInfo.toString(), "Ticket Details", JOptionPane.INFORMATION_MESSAGE);
-                    } while (resultSet.next());
+                    // Display the ticket information using JOptionPane
+                    JOptionPane.showMessageDialog(this, ticketInfo.toString(), "Ticket Details", JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    JOptionPane.showMessageDialog(this, "No tickets found for the user.", "Ticket Details", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "No ticket found for the user.", "Ticket Details", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+    
+
     
     private void cancelTicket(String username) {
-        // Query to retrieve all tickets based on the user's username
-        String query = "SELECT * FROM Tickets WHERE UserName = ?";
-        
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE)) {
-            preparedStatement.setString(1, username);
-        
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    // Display each ticket information
-                    resultSet.last(); // Move to the last row to get the row count
-                    int rowCount = resultSet.getRow();
-                    resultSet.beforeFirst(); // Move back to the beginning
-    
-                    String[] options = new String[rowCount];
-                    int index = 0;
-    
-                    // Display each ticket and store options
-                    do {
-                        int ticketID = resultSet.getInt("TicketID");
-                        boolean isCompanionTicket = resultSet.getBoolean("IsCompanionTicket");
-    
-                        // Build ticket information
-                        StringBuilder ticketInfo = new StringBuilder();
-                        ticketInfo.append("Ticket ID: ").append(ticketID).append("\n");
-                        // ... (other ticket details)
-    
-                        if (isCompanionTicket) {
-                            ticketInfo.append("Ticket Type: Companion Ticket").append("\n");
-                        } else {
-                            ticketInfo.append("Ticket Type: Regular Ticket").append("\n");
-                        }
-    
-                        options[index] = "Ticket ID: " + ticketID;
-                        index++;
-    
-                        // Display the ticket information using JOptionPane
-                        JOptionPane.showMessageDialog(this, ticketInfo.toString(), "Ticket Details", JOptionPane.INFORMATION_MESSAGE);
-                    } while (resultSet.next());
-    
-                    // Ask the user to choose a ticket to cancel
-                    String selectedOption = (String) JOptionPane.showInputDialog(
-                            this,
-                            "Choose a ticket to cancel:",
-                            "Cancel Ticket",
-                            JOptionPane.PLAIN_MESSAGE,
-                            null,
-                            options,
-                            options[0]
-                    );
-    
-                    if (selectedOption != null) {
-                        int ticketID = Integer.parseInt(selectedOption.split(": ")[1].trim());
-                        // Perform the cancellation based on the selected ticketID
-                        performTicketCancellation(ticketID);
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(this, "No tickets found for the user.", "Ticket Details", JOptionPane.INFORMATION_MESSAGE);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    private void performTicketCancellation(int ticketID) {
-        // Update the logic to cancel the selected ticket and set the cancellation date
-        String updateQuery = "UPDATE Tickets SET IsCancelled = true, CancellationDate = NOW(), SeatID = null WHERE TicketID = ?";
+        // Update the logic to cancel the user's ticket and set the cancellation date
+        String updateQuery = "UPDATE Tickets SET IsCancelled = true, CancellationDate = ?, SeatID = null WHERE UserName = ?";
         
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
-            preparedStatement.setInt(1, ticketID);
+            // Set the cancellation date parameter to the current date and time
+            Timestamp cancellationDate = new Timestamp(new Date().getTime());
+            preparedStatement.setTimestamp(1, cancellationDate);
+            
+            // Set the username parameter
+            preparedStatement.setString(2, username);
             
             int rowsAffected = preparedStatement.executeUpdate();
-    
+        
             if (rowsAffected > 0) {
                 JOptionPane.showMessageDialog(this, "Ticket Cancelled!");
                 revalidate();
@@ -324,8 +279,7 @@ public class LoginFrame extends JFrame {
             e.printStackTrace();
         }
     }
-
-
+    
     private void openUserRegistrationFrame() {
         UserRegistrationFrame registrationFrame = new UserRegistrationFrame(databaseConnector, this);
         registrationFrame.setVisible(true);
