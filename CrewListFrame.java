@@ -1,19 +1,14 @@
 // CrewListFrame.java
 import javax.swing.*;
-
-
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.List;
 
-public class CrewListFrame extends JFrame {
+public class CrewListFrame extends JFrame implements ListLoader, Printer {
     private JTextArea crewListArea;
-    private DatabaseConnector databaseConnector;
+    private ItemLoader itemLoader;
 
     public CrewListFrame(DatabaseConnector databaseConnector) {
-        this.databaseConnector = databaseConnector;
+        this.itemLoader = new ItemLoader(databaseConnector);
 
         setTitle("Flight Reservation - Crew List");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -34,25 +29,21 @@ public class CrewListFrame extends JFrame {
         add(scrollPane, BorderLayout.CENTER);
 
         // Load and display the list of crews
-        loadCrews();
+        loadList();
     }
 
-    // Function to load and display the list of crews from the database
-    private void loadCrews() {
-        try (Connection connection = databaseConnector.getConnection()) {
-            String query = "SELECT Name FROM Crews";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                StringBuilder crewList = new StringBuilder();
-                while (resultSet.next()) {
-                    String crewInfo = resultSet.getString("Name");
-                    crewList.append(crewInfo).append("\n");
-                }
-                crewListArea.setText(crewList.toString());
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error loading crew list.");
+    @Override
+    public void loadList() {
+        List<Item> crewList = itemLoader.loadCrews();
+        displayItems(crewList);
+    }
+
+    @Override
+    public void displayItems(List<Item> items) {
+        StringBuilder itemText = new StringBuilder();
+        for (Item item : items) {
+            itemText.append(item.getText()).append("\n");
         }
+        crewListArea.setText(itemText.toString());
     }
 }
