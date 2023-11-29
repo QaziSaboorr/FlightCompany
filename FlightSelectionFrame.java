@@ -7,16 +7,20 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class FlightSelectionFrame extends JFrame {
+public class FlightSelectionFrame extends JFrame implements ListLoader {
     private JComboBox<String> flightComboBox;
     private JButton selectFlightButton;
     private JButton showPassengerListButton;  // New button for showing passenger list
     private UserType userType;
     private DatabaseConnector databaseConnector;
 
+    private FlightController flightController;
+
     public FlightSelectionFrame(UserType userType, DatabaseConnector databaseConnector) {
         this.userType = userType;
         this.databaseConnector = databaseConnector;
+
+        this.flightController = new FlightController(databaseConnector);
 
         setTitle("Flight Reservation - Flight Selection");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -40,11 +44,11 @@ public class FlightSelectionFrame extends JFrame {
             showPassengerListButton.addActionListener(e -> openPassengerListFrame());
         }
 
-        loadFlights();
+        loadList();
 
         selectFlightButton.addActionListener(e -> {
             String selectedFlightInfo = (String) flightComboBox.getSelectedItem();
-            String selectedFlightNumber = extractFlightNumber(selectedFlightInfo);
+            String selectedFlightNumber = flightController.extractFlightNumber(selectedFlightInfo);
 
             new SeatSelectionFrame(selectedFlightNumber, userType, databaseConnector).setVisible(true);
             this.dispose();
@@ -59,7 +63,8 @@ public class FlightSelectionFrame extends JFrame {
         setVisible(true);
     }
 
-    private void loadFlights() {
+    @Override
+    public void loadList() {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT FlightNumber, Origin, Destination FROM Flights WHERE FlightNumber IS NOT NULL";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -76,18 +81,9 @@ public class FlightSelectionFrame extends JFrame {
         }
     }
 
-    private String extractFlightNumber(String flightInfo) {
-        int endIndex = flightInfo.indexOf(" -");
-        if (endIndex != -1) {
-            return flightInfo.substring(0, endIndex);
-        } else {
-            return flightInfo;
-        }
-    }
-
     private void openPassengerListFrame() {
         String selectedFlightInfo = (String) flightComboBox.getSelectedItem();
-        String selectedFlightNumber = extractFlightNumber(selectedFlightInfo);
+        String selectedFlightNumber = flightController.extractFlightNumber(selectedFlightInfo);
         new PassengerListFrame(selectedFlightNumber, databaseConnector).setVisible(true);
     }
 }
