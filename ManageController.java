@@ -87,7 +87,7 @@ public class ManageController {
                 }
             }
         }
-        return -1; // Return -1 if FlightID is not found (should not happen in a well-formed database)
+        return -1; // Return -1 if FlightID is not found
     }
 
 
