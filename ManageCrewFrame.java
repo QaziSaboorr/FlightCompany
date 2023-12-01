@@ -78,14 +78,6 @@ public class ManageCrewFrame extends JFrame {
                 removeCrew();
             }
         });
-
-            // Add action listener for the "Remove Crew" button
-        removeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                removeCrew();
-            }
-         });
     }
 
     // Function to get the existing crew for a given flight ID
