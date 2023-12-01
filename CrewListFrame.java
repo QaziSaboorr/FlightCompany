@@ -32,12 +32,14 @@ public class CrewListFrame extends JFrame implements ListLoader, Printer {
         loadList();
     }
 
+    // Overrided function to get the Crew List
     @Override
     public void loadList() {
         List<Item> crewList = itemLoader.loadCrews();
         displayItems(crewList);
     }
 
+    // Overrided function to display the Item(Crew)
     @Override
     public void displayItems(List<Item> items) {
         StringBuilder itemText = new StringBuilder();

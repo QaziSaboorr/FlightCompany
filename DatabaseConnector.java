@@ -1,5 +1,3 @@
-
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -9,7 +7,7 @@ public class DatabaseConnector {
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "Password25";
     
-    // Private static instance variable
+    // Private static instance variable (Singleton)
     private static DatabaseConnector instance;
 
     // Private constructor to prevent instantiation

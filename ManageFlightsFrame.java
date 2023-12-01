@@ -178,21 +178,6 @@ public class ManageFlightsFrame extends JFrame {
         }
     }
     
-    // // Function to get the FlightID for a given flight number
-    // private int getFlightID(Connection connection, String flightNumber) throws SQLException {
-    //     String query = "SELECT FlightID FROM Flights WHERE FlightNumber = ?";
-    //     try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-    //         preparedStatement.setString(1, flightNumber);
-    //         try (ResultSet resultSet = preparedStatement.executeQuery()) {
-    //             if (resultSet.next()) {
-    //                 return resultSet.getInt("FlightID");
-    //             }
-    //         }
-    //     }
-    //     return -1; // Return -1 if FlightID is not found (should not happen in a well-formed database)
-    // }
-    
-    
 
     // Function to get the DestinationID for a given destination name
     private int getDestinationID(Connection connection, String destinationName) throws SQLException {

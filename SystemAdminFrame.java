@@ -1,9 +1,8 @@
-
 import javax.swing.*;
 
 
-
 public class SystemAdminFrame extends JFrame {
+
     private DatabaseConnector databaseConnector;
 
     public SystemAdminFrame(DatabaseConnector databaseConnector) {
