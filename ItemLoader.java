@@ -25,7 +25,7 @@ public class ItemLoader {
     }
 
 
-    private List<Item> loadData(String query, DataItemFactory factory) {
+    private List<Item> loadData(String query, DataItem factory) {
         List<Item> items = new ArrayList<>();
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -39,7 +39,7 @@ public class ItemLoader {
         return items;
     }
 
-    interface DataItemFactory {
+    interface DataItem{
         Item createItem(ResultSet resultSet) throws SQLException;
     }
 }
