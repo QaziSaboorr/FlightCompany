@@ -1,4 +1,4 @@
 public interface Item {
-    String getText();
+    public String getText();
 }
 
