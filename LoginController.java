@@ -2,7 +2,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import javax.swing.JOptionPane;
 
 
@@ -168,5 +167,54 @@ public class LoginController {
         return false;
     }
 
+    public void checkCreditCard(UserType userType, String username) {
+        // Exclude the prompt for company credit card for specific user types
+        if (userType == UserType.SystemAdmin || userType == UserType.FlightAttendant || userType == UserType.AirlineAgent) {
+            return;
+        }
+
+        // Check credit card status 
+        boolean hasCompanyCreditCard = getCompanyCreditCardStatus(username);
+        if (!hasCompanyCreditCard) {
+            int option = JOptionPane.showConfirmDialog(null,
+                    "Would you like to apply for a Vortex Airlines credit card?", "Credit Card",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (option == JOptionPane.YES_OPTION) {
+                updateCreditCardStatus(username, true);
+            }
+        }
+    }
+
+    public boolean authenticateUser(UserType userType, String username, String password) {
+        switch (userType) {
+            case Registered:
+            case AirlineAgent:
+            case SystemAdmin:
+            case FlightAttendant:
+                return checkCredentials(username, password);
+            default:
+                return false;
+        }
+    }
+
+    public void addUserToDatabase(String username, String email) {
+        String query = "INSERT INTO Users (UserName, Email, UserType) VALUES (?, ?, ?)";
+        try (Connection connection = DatabaseConnector.getInstance().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, username);
+            preparedStatement.setString(2, email);
+            preparedStatement.setString(3, UserType.Unregistered.name()); // Set UserType to Unregistered
+
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     
+
+
+
+ 
 }

@@ -78,17 +78,17 @@ public class LoginFrame extends JFrame {
                 // If not registering, ask for email and add the user to the Users table
                 String email = JOptionPane.showInputDialog(this, "Please enter your email:");
                 if (email != null && !email.isEmpty()) {
-                    addUserToDatabase(username, email);
+                    loginController.addUserToDatabase(username, email);
                     openFlightSelectionFrame(selectedUserType, username, passwordString);
                 } else {
                     JOptionPane.showMessageDialog(this, "Email is required.");
                 }
             }
         } else {
-            if (authenticateUser(selectedUserType, username, passwordString)) {
+            if (loginController.authenticateUser(selectedUserType, username, passwordString)) {
                 // Check and prompt for membership, credit card, and companion ticket
                 checkMemberAttributes(selectedUserType, username);
-                checkCreditCard(selectedUserType, username);
+                loginController.checkCreditCard(selectedUserType, username);
                 // After checks, open the appropriate frame
                 openFlightSelectionFrame(selectedUserType, username, passwordString);
             } else {
@@ -96,33 +96,6 @@ public class LoginFrame extends JFrame {
             }
         }
     }
-
-    private void addUserToDatabase(String username, String email) {
-        String query = "INSERT INTO Users (UserName, Email, UserType) VALUES (?, ?, ?)";
-        try (Connection connection = DatabaseConnector.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, username);
-            preparedStatement.setString(2, email);
-            preparedStatement.setString(3, UserType.Unregistered.name()); // Set UserType to Unregistered
-
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    private boolean authenticateUser(UserType userType, String username, String password) {
-        switch (userType) {
-            case Registered:
-            case AirlineAgent:
-            case SystemAdmin:
-            case FlightAttendant:
-                return loginController.checkCredentials(username, password);
-            default:
-                return false;
-        }
-    }
-
 
     private void openFlightSelectionFrame(UserType userType, String username, String password) {
         if (userType == UserType.FlightAttendant) {
@@ -186,22 +159,6 @@ public class LoginFrame extends JFrame {
         }
     }
     
-    public int getPassengerID(String username, Connection connection) throws SQLException {
-        // Retrieve the PassengerID associated with the given username
-        String passengerIDQuery = "SELECT PassengerID FROM Passengers WHERE UserName = ?";
-        try (PreparedStatement passengerIDStatement = connection.prepareStatement(passengerIDQuery)) {
-            passengerIDStatement.setString(1, username);
-            try (ResultSet resultSet = passengerIDStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getInt("PassengerID");
-                }
-            }
-        }
-    
-        // Return -1 if no PassengerID is found
-        return -1;
-    }
-    
     private void openUserRegistrationFrame() {
         UserRegistrationFrame registrationFrame = new UserRegistrationFrame(this);
         registrationFrame.setVisible(true);
@@ -224,27 +181,23 @@ public class LoginFrame extends JFrame {
         }
     }
 
-    private void checkCreditCard(UserType userType, String username) {
-        // Exclude the prompt for company credit card for specific user types
-        if (userType == UserType.SystemAdmin || userType == UserType.FlightAttendant || userType == UserType.AirlineAgent) {
-            return;
-        }
-
-        // Check credit card status 
-        boolean hasCompanyCreditCard = loginController.getCompanyCreditCardStatus(username);
-        if (!hasCompanyCreditCard) {
-            int option = JOptionPane.showConfirmDialog(this,
-                    "Would you like to apply for a Vortex Airlines credit card?", "Credit Card",
-                    JOptionPane.YES_NO_OPTION);
-
-            if (option == JOptionPane.YES_OPTION) {
-                loginController.updateCreditCardStatus(username, true);
-            }
-        }
-    }
-
     public void setUserType(UserType userType) {
         userTypeComboBox.setSelectedItem(userType);
     }
 
+    public int getPassengerID(String username, Connection connection) throws SQLException {
+        // Retrieve the PassengerID associated with the given username
+        String passengerIDQuery = "SELECT PassengerID FROM Passengers WHERE UserName = ?";
+        try (PreparedStatement passengerIDStatement = connection.prepareStatement(passengerIDQuery)) {
+            passengerIDStatement.setString(1, username);
+            try (ResultSet resultSet = passengerIDStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("PassengerID");
+                }
+            }
+        }
+    
+        // Return -1 if no PassengerID is found
+        return -1;
+    }
 }
