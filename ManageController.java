@@ -140,6 +140,80 @@ public class ManageController {
             JOptionPane.showMessageDialog(null, this, "Error removing flight information.", 0);
         }
     }
+
+    // Function to get the existing crew for a given flight ID
+    public String getExistingCrew(Connection connection, int flightID) throws SQLException {
+        String query = "SELECT Name FROM Crews WHERE FlightID = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, flightID);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getString("Name");
+                }
+            }
+        }
+        return null; // Return null if there is no existing crew
+    }   
+
+        // Function to check if a flight with the given flight number already exists
+    public boolean flightExists(Connection connection, String flightNumber) throws SQLException {
+        String query = "SELECT FlightID FROM Flights WHERE FlightNumber = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, flightNumber);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next(); // Returns true if a matching flight is found
+            }
+        }
+    }
+
+    // Function to get the DestinationID for a given destination name
+    public int getDestinationID(Connection connection, String destinationName) throws SQLException {
+        String query = "SELECT DestinationID FROM Destinations WHERE DestinationName = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, destinationName);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("DestinationID");
+                }
+            }
+        }
+        return -1; // Return -1 if DestinationID is not found
+    }
+
+    // Function to get the AircraftID for a given aircraft number
+    public int getAircraftID(Connection connection, String aircraftNumber) throws SQLException {
+        String query = "SELECT AircraftID FROM Aircrafts WHERE AircraftNumber = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, aircraftNumber);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("AircraftID");
+                }
+            }
+        }
+        return -1; // Return -1 if AircraftID is not found
+    }
+
+
+    public void addSeatsForFlight(Connection connection, int flightID) throws SQLException {
+        // Define the seat data
+        String[] seatNumbers = {"A1", "A2", "A3", "A4", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4", "D1", "D2", "D3", "D4"};
+        String[] seatTypes = {"Business-Class", "Business-Class", "Business-Class", "Business-Class", "Business-Class", "Business-Class", "Business-Class", "Business-Class", "Regular", "Regular", "Regular", "Regular", "Regular", "Regular", "Regular", "Regular"};
+        double[] seatPrices = {200.00, 200.00, 200.00, 200.00, 200.00, 200.00, 200.00, 200.00, 100.00, 100.00, 100.00, 100.00, 100.00, 100.00, 100.00, 100.00};
+
+        // Insert seat data into the Seats table for the given flightID
+        String query = "INSERT INTO Seats (FlightID, SeatNumber, SeatType, SeatPrice) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            for (int i = 0; i < seatNumbers.length; i++) {
+                preparedStatement.setInt(1, flightID);
+                preparedStatement.setString(2, seatNumbers[i]);
+                preparedStatement.setString(3, seatTypes[i]);
+                preparedStatement.setDouble(4, seatPrices[i]);
+                preparedStatement.executeUpdate();
+            }
+        }
+    }
+
     
 
 }

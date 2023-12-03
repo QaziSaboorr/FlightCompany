@@ -9,7 +9,8 @@ class PaymentFrame extends JFrame {
     private TicketConfirmationFrame ticketConfirmationFrame;
     private String selectedFlight;
     private double seatPrice;
-
+    private JLabel paymentAmountLabel;
+    
     public PaymentFrame(TicketConfirmationFrame ticketConfirmationFrame, String selectedFlight, String seatNumber, double seatPrice) {
         this.ticketConfirmationFrame = ticketConfirmationFrame;
         this.selectedFlight = selectedFlight;
@@ -24,8 +25,6 @@ class PaymentFrame extends JFrame {
         JPanel panel = createPaymentPanel();
         add(panel, BorderLayout.CENTER);
     }
-
-    private JLabel paymentAmountLabel;
 
     private JPanel createPaymentPanel() {
         JPanel panel = new JPanel();

@@ -1,15 +1,11 @@
 
 // ManageCrewFrame.java
 import javax.swing.*;
-
-
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class ManageCrewFrame extends JFrame {
@@ -76,19 +72,6 @@ public class ManageCrewFrame extends JFrame {
         });
     }
 
-    // Function to get the existing crew for a given flight ID
-    private String getExistingCrew(Connection connection, int flightID) throws SQLException {
-        String query = "SELECT Name FROM Crews WHERE FlightID = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setInt(1, flightID);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getString("Name");
-                }
-            }
-        }
-        return null; // Return null if there is no existing crew
-    }   
 
     // Function to add a new crew to the database
     private void addCrew() {
@@ -105,7 +88,7 @@ public class ManageCrewFrame extends JFrame {
             int flightID = manageController.getFlightID(connection, flightNumber);
 
             // Check if there is an existing crew for the selected flight
-            String existingCrew = getExistingCrew(connection, flightID);
+            String existingCrew = manageController.getExistingCrew(connection, flightID);
             if (existingCrew != null) {
                 int confirmation = JOptionPane.showConfirmDialog(
                         this,
