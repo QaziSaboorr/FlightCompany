@@ -23,13 +23,13 @@ public class ItemLoader {
     }
 
 
-    private List<Item> loadData(String query, DataItem factory) {
+    private List<Item> loadData(String query, DataItem item) {
         List<Item> items = new ArrayList<>();
         try (Connection connection = DatabaseConnector.getInstance().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query);
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
-                items.add(factory.createItem(resultSet));
+                items.add(item.createItem(resultSet));
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
