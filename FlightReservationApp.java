@@ -12,9 +12,6 @@ public class FlightReservationApp {
             return;
         }
 
-        // Create a DatabaseConnector singleton instance
-        DatabaseConnector databaseConnector = DatabaseConnector.getInstance();
-
         // Pass the database connector to the LoginFrame
         SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
     }
