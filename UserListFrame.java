@@ -7,17 +7,15 @@ import java.sql.SQLException;
 
 public class UserListFrame extends JFrame {
     private JList<String> userList;
-    private DatabaseConnector databaseConnector;
 
-    public UserListFrame(DatabaseConnector databaseConnector) {
-        this.databaseConnector = databaseConnector;
+    public UserListFrame() {
 
         setTitle("Flight Reservation - User List");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(600, 400);
         setLocationRelativeTo(null);
 
-        // Create a list model to store user information
+        // Create a list to store user information
         DefaultListModel<String> listModel = new DefaultListModel<>();
         userList = new JList<>(listModel);
 
@@ -35,7 +33,7 @@ public class UserListFrame extends JFrame {
 
     // Function to load registered users from the database
     private void loadUsers() {
-        try (Connection connection = databaseConnector.getConnection()) {
+        try (Connection connection = DatabaseConnector.getInstance().getConnection()) {
             String query = "SELECT UserName, Email, UserType, Address FROM Users WHERE UserType = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 // Set the UserType parameter to "Registered"

@@ -1,8 +1,4 @@
-
 import javax.swing.*;
-
-
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,11 +12,9 @@ public class UserRegistrationFrame extends JFrame {
     private JTextField emailField;
     private JTextField addressField;
     private JButton registerButton;
-    private DatabaseConnector databaseConnector;
     private LoginFrame loginFrame;
 
-    public UserRegistrationFrame(DatabaseConnector databaseConnector, LoginFrame loginFrame) {
-        this.databaseConnector = databaseConnector;
+    public UserRegistrationFrame(LoginFrame loginFrame) {
         this.loginFrame = loginFrame;
 
         setTitle("User Registration");
@@ -47,8 +41,7 @@ public class UserRegistrationFrame extends JFrame {
         add(addressField);
         add(new JLabel()); // Empty label for spacing
         add(registerButton);
-
-        // Action Listener for register button
+        
         registerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -72,7 +65,7 @@ public class UserRegistrationFrame extends JFrame {
         // Insert the user data into the database
         String query = "INSERT INTO Users (UserName, UserType, Email, Password, Address) VALUES (?, 'Registered', ?, ?, ?)";
 
-        try (Connection connection = databaseConnector.getConnection();
+        try (Connection connection = DatabaseConnector.getInstance().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, username);
             preparedStatement.setString(2, email);

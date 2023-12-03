@@ -7,12 +7,11 @@ public class DatabaseConnector {
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "Password25";
     
-    // Private static instance variable (Singleton)
+    // Private static instance variable
     private static DatabaseConnector instance;
 
     // Private constructor to prevent instantiation
-    private DatabaseConnector() {
-    }
+    private DatabaseConnector() {}
 
     // Public static method to get the singleton instance
     public static synchronized DatabaseConnector getInstance() {

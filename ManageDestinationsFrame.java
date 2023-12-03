@@ -14,10 +14,9 @@ import java.sql.SQLException;
 public class ManageDestinationsFrame extends JFrame {
     private JTextField destinationNameField;
     private JButton addButton;
-    private DatabaseConnector databaseConnector;
 
-    public ManageDestinationsFrame(DatabaseConnector databaseConnector) {
-        this.databaseConnector = databaseConnector;
+    public ManageDestinationsFrame() {
+
 
         setTitle("Flight Reservation - Manage Destination");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -54,7 +53,7 @@ public class ManageDestinationsFrame extends JFrame {
             return;
         }
 
-        try (Connection connection = databaseConnector.getConnection()) {
+        try (Connection connection = DatabaseConnector.getInstance().getConnection()) {
             String query = "INSERT INTO Destinations (DestinationName) VALUES (?)";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, destinationName);
@@ -67,4 +66,5 @@ public class ManageDestinationsFrame extends JFrame {
             JOptionPane.showMessageDialog(this, "Error adding destination.");
         }
     }
+    
 }

@@ -1,7 +1,4 @@
-
 import javax.swing.*;
-
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,17 +7,15 @@ import java.sql.SQLException;
 public class FlightSelectionFrame extends JFrame implements ListLoader {
     private JComboBox<String> flightComboBox;
     private JButton selectFlightButton;
-    private JButton showPassengerListButton;  // New button for showing passenger list
+    private JButton showPassengerListButton;  
     private UserType userType;
-    private DatabaseConnector databaseConnector;
 
     private FlightController flightController;
 
-    public FlightSelectionFrame(UserType userType, DatabaseConnector databaseConnector) {
+    public FlightSelectionFrame(UserType userType) {
         this.userType = userType;
-        this.databaseConnector = databaseConnector;
 
-        this.flightController = new FlightController(databaseConnector);
+        this.flightController = new FlightController();
 
         setTitle("Flight Reservation - Flight Selection");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -29,7 +24,7 @@ public class FlightSelectionFrame extends JFrame implements ListLoader {
 
         flightComboBox = new JComboBox<>();
         selectFlightButton = new JButton("Select Flight");
-        showPassengerListButton = new JButton("Show Passenger List");  // Initialize the button
+        showPassengerListButton = new JButton("Show Passenger List");
 
         setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 
@@ -50,7 +45,7 @@ public class FlightSelectionFrame extends JFrame implements ListLoader {
             String selectedFlightInfo = (String) flightComboBox.getSelectedItem();
             String selectedFlightNumber = flightController.extractFlightNumber(selectedFlightInfo);
 
-            new SeatSelectionFrame(selectedFlightNumber, userType, databaseConnector).setVisible(true);
+            new SeatSelectionFrame(selectedFlightNumber, userType).setVisible(true);
             this.dispose();
         });
 
@@ -65,7 +60,7 @@ public class FlightSelectionFrame extends JFrame implements ListLoader {
 
     @Override
     public void loadList() {
-        try (Connection connection = databaseConnector.getConnection()) {
+        try (Connection connection = DatabaseConnector.getInstance().getConnection()) {
             String query = "SELECT FlightNumber, Origin, Destination FROM Flights WHERE FlightNumber IS NOT NULL";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -84,6 +79,6 @@ public class FlightSelectionFrame extends JFrame implements ListLoader {
     private void openPassengerListFrame() {
         String selectedFlightInfo = (String) flightComboBox.getSelectedItem();
         String selectedFlightNumber = flightController.extractFlightNumber(selectedFlightInfo);
-        new PassengerListFrame(selectedFlightNumber, databaseConnector).setVisible(true);
+        new PassengerListFrame(selectedFlightNumber).setVisible(true);
     }
 }

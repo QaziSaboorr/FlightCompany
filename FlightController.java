@@ -1,12 +1,10 @@
 public class FlightController {
-    private DatabaseConnector databaseConnector;
 
-    public FlightController(DatabaseConnector databaseConnector) {
-        this.databaseConnector = databaseConnector;
+    public FlightController() {
     }
 
     public void handleFlightSelection(UserType userType) {
-        FlightSelectionFrame flightSelectionFrame = new FlightSelectionFrame(userType, databaseConnector);
+        FlightSelectionFrame flightSelectionFrame = new FlightSelectionFrame(userType);
         flightSelectionFrame.setVisible(true);
     }
 

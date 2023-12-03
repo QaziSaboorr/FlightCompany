@@ -12,23 +12,20 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-
-
 public class ManageCrewFrame extends JFrame {
     private JTextField crewNameField;
     private JComboBox<String> flightComboBox;
     private JButton addButton;
-    private JButton removeButton; // Added Remove Crew button
+    private JButton removeButton; 
     private DatabaseConnector databaseConnector;
-    private JComboBox<String> crewDropdown; // Added crew dropdown
-    private JComboBox<String> flightDropdown; // Added flight dropdown  
+    private JComboBox<String> crewDropdown; 
 
     private ManageController manageController;
 
-    public ManageCrewFrame(DatabaseConnector databaseConnector) {
-        this.databaseConnector = databaseConnector;
+    public ManageCrewFrame() {
+        this.databaseConnector = DatabaseConnector.getInstance();
 
-        this.manageController = new ManageController(databaseConnector);
+        this.manageController = new ManageController();
 
         setTitle("Flight Reservation - Manage Crew");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -41,9 +38,8 @@ public class ManageCrewFrame extends JFrame {
         addButton = new JButton("Add Crew");
         removeButton = new JButton("Remove Crew");
 
-        // Added crew and flight dropdowns
+        // Added crew dropdown
         crewDropdown = new JComboBox<>();
-        flightDropdown = new JComboBox<>();
 
         // Load flight numbers and crews into the combo boxes
         manageController.loadFlightNumbers(flightComboBox);
@@ -135,7 +131,6 @@ public class ManageCrewFrame extends JFrame {
                 preparedStatement.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Crew added successfully.");
                 crewNameField.setText(""); // Clear the input field after adding
-                // Reload the crews and flights into the dropdown for an updated view
                 crewDropdown.removeAllItems();
                 manageController.loadCrewsAndFlights(crewDropdown);
             }
@@ -174,7 +169,6 @@ public class ManageCrewFrame extends JFrame {
                         JOptionPane.showMessageDialog(this, "Crew removed successfully.");
                         crewNameField.setText(""); // Clear the input field after removal
                         crewDropdown.removeItem(selectedCrewInfo); // Remove the crew from the dropdown
-                        // Reload the crews and flights into the dropdown for an updated view
                         crewDropdown.removeAllItems();
                         manageController.loadCrewsAndFlights(crewDropdown);
                     } else {

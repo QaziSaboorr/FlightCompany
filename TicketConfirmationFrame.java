@@ -14,25 +14,23 @@ public class TicketConfirmationFrame extends JFrame {
     private String seatType;
     private double seatPrice;
     private boolean insuranceSelected;
-    private DatabaseConnector databaseConnector;
-    
 
-    public TicketConfirmationFrame(UserType userType, String selectedFlight, String seatNumber, String seatType, double seatPrice, boolean insuranceSelected, DatabaseConnector databaseConnector) {
+
+    public TicketConfirmationFrame(UserType userType, String selectedFlight, String seatNumber, String seatType, double seatPrice, boolean insuranceSelected) {
         this.userType = userType;
         this.selectedFlight = selectedFlight;
         this.seatNumber = seatNumber;
         this.seatType = seatType;
         this.seatPrice = seatPrice;
         this.insuranceSelected = insuranceSelected;
-        this.databaseConnector = databaseConnector; // Add this line
+
 
         setTitle("Flight Reservation - Ticket Confirmation");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        setSize(400, 250); // Increased height to accommodate user name and email
+        setSize(400, 250);
         setLocationRelativeTo(null);
 
-        // Implement your ticket confirmation UI here
         JPanel panel = createConfirmationPanel();
         add(panel, BorderLayout.CENTER);
 
@@ -40,6 +38,48 @@ public class TicketConfirmationFrame extends JFrame {
         JButton cancelTicketButton = new JButton("Cancel Ticket");
         cancelTicketButton.addActionListener(e -> cancelTicket());
         add(cancelTicketButton, BorderLayout.SOUTH);
+    }
+        
+    // Getter method for userType
+    public UserType getUserType() {
+        return userType;
+    }
+
+    // Getter method for seatType
+    public String getSeatType() {
+        return seatType;
+    }
+
+    public String getUserEmail() {
+        try (Connection connection = DatabaseConnector.getInstance().getConnection()) {
+            String query = "SELECT Email FROM Users ORDER BY UserID DESC LIMIT 1";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return resultSet.getString("Email");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "N/A";
+    }
+
+    public String getUserName() {
+        try (Connection connection = DatabaseConnector.getInstance().getConnection()) {
+            String query = "SELECT UserName FROM Users ORDER BY UserID DESC LIMIT 1";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return resultSet.getString("UserName");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "N/A";
     }
 
     private JPanel createConfirmationPanel() {
@@ -91,7 +131,7 @@ public class TicketConfirmationFrame extends JFrame {
     
 
     public boolean checkCompanionTicketUsage() {
-        try (Connection connection = databaseConnector.getConnection()) {
+        try (Connection connection = DatabaseConnector.getInstance().getConnection()) {
             String query;
             if (getUserType() == UserType.Registered) {
                 // Check for companion ticket redemption for registered users
@@ -113,59 +153,12 @@ public class TicketConfirmationFrame extends JFrame {
         return false;
     }
     
-    private String getUserName() {
-        try (Connection connection = databaseConnector.getConnection()) {
-            String query = "SELECT UserName FROM Users ORDER BY UserID DESC LIMIT 1";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        return resultSet.getString("UserName");
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return "N/A";
-    }
-    
-    public String getUserEmail() {
-        try (Connection connection = databaseConnector.getConnection()) {
-            String query = "SELECT Email FROM Users ORDER BY UserID DESC LIMIT 1";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        return resultSet.getString("Email");
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return "N/A";
-    }
-    // Getter method for userType
-    public UserType getUserType() {
-        return userType;
-    }
-
-    // Getter method for databaseConnector
-    public DatabaseConnector getDatabaseConnector() {
-        return databaseConnector;
-    }
-
-    // Getter method for seatType
-    public String getSeatType() {
-        return seatType;
-    }
-    
-
 
     public void confirmTicket() {
         // Logic for confirming the ticket and updating the database
         try {
             // Use the shared database connector
-            try (Connection connection = databaseConnector.getConnection()) {
+            try (Connection connection = DatabaseConnector.getInstance().getConnection()) {
                 // Check if a companion ticket is redeemed
                 boolean useCompanionTicket = checkCompanionTicketUsage();
                 if (getUserType() == UserType.Registered){
@@ -233,7 +226,6 @@ public class TicketConfirmationFrame extends JFrame {
             ex.printStackTrace();
         }
     
-        // Additional logic for ticket confirmation (e.g., sending email, updating UI)
         JOptionPane.showMessageDialog(this, "Ticket Confirmed!");
         dispose();
     }
@@ -243,7 +235,7 @@ public class TicketConfirmationFrame extends JFrame {
     private void cancelTicket() {
         try {
             // Use the shared database connector
-            try (Connection connection = databaseConnector.getConnection()) {
+            try (Connection connection = DatabaseConnector.getInstance().getConnection()) {
                 // Update the Tickets table
                 String ticketQuery = "UPDATE Tickets SET IsCancelled = TRUE, CancellationDate = NOW() WHERE UserID = ? AND FlightID = (SELECT FlightID FROM Flights WHERE FlightNumber = ? LIMIT 1)";
                 try (PreparedStatement ticketPreparedStatement = connection.prepareStatement(ticketQuery)) {
@@ -264,7 +256,6 @@ public class TicketConfirmationFrame extends JFrame {
             ex.printStackTrace();
         }
     
-        // Additional logic for ticket cancellation (e.g., updating UI)
         JOptionPane.showMessageDialog(this, "Ticket Cancelled!");
         dispose();
     }
@@ -301,7 +292,7 @@ public class TicketConfirmationFrame extends JFrame {
     }
     
     private void createCompanionTicket(String newSeatNumber) {
-        // Logic to create a new ticket for the same flight with the chosen seat
+        // Create a new ticket for the same flight with the chosen seat
         // Set seatPrice to 0 for the companion ticket
         double companionTicketPrice = 0.0;
     
@@ -311,7 +302,7 @@ public class TicketConfirmationFrame extends JFrame {
                 "(SELECT SeatID FROM Seats WHERE SeatNumber = ? LIMIT 1), ?, ?, " +
                 "(SELECT Destination FROM Flights WHERE FlightNumber = ? LIMIT 1), ?, ?)";
     
-        try (Connection connection = databaseConnector.getConnection();
+        try (Connection connection = DatabaseConnector.getInstance().getConnection();
              PreparedStatement companionTicketPreparedStatement = connection.prepareStatement(companionTicketInsertQuery, PreparedStatement.RETURN_GENERATED_KEYS)) {
     
             companionTicketPreparedStatement.setInt(1, userType.ordinal() + 1);
@@ -325,8 +316,7 @@ public class TicketConfirmationFrame extends JFrame {
             companionTicketPreparedStatement.setBoolean(9, false); // Companion ticket does not have insurance
             companionTicketPreparedStatement.setDouble(10, companionTicketPrice);
             companionTicketPreparedStatement.executeUpdate();
-    
-            // Additional logic for companion ticket confirmation (e.g., sending email)
+
             JOptionPane.showMessageDialog(this, "Companion Ticket Redeemed!");
         } catch (SQLException ex) {
             ex.printStackTrace();

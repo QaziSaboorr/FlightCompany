@@ -7,8 +7,8 @@ public class CrewListFrame extends JFrame implements ListLoader, Printer {
     private JTextArea crewListArea;
     private ItemLoader itemLoader;
 
-    public CrewListFrame(DatabaseConnector databaseConnector) {
-        this.itemLoader = new ItemLoader(databaseConnector);
+    public CrewListFrame() {
+        this.itemLoader = new ItemLoader();
 
         setTitle("Flight Reservation - Crew List");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

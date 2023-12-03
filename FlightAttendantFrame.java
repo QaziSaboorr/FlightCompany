@@ -8,10 +8,10 @@ public class FlightAttendantFrame extends JFrame implements ListLoader, Printer 
     private ItemLoader itemLoader;
     private FlightController flightController;
 
-    public FlightAttendantFrame(DatabaseConnector databaseConnector) {
-        this.itemLoader = new ItemLoader(databaseConnector);
+    public FlightAttendantFrame() {
+        this.itemLoader = new ItemLoader();
 
-        this.flightController = new FlightController(databaseConnector);
+        this.flightController = new FlightController();
 
         setTitle("Flight Reservation - Flight Attendant");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -35,7 +35,7 @@ public class FlightAttendantFrame extends JFrame implements ListLoader, Printer 
             String selectedFlightNumber = flightController.extractFlightNumber(selectedFlightInfo);
 
             // Open the PassengerListFrame for the selected flight
-            new PassengerListFrame(selectedFlightNumber, databaseConnector).setVisible(true);
+            new PassengerListFrame(selectedFlightNumber).setVisible(true);
         });
 
         setVisible(true);

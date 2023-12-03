@@ -6,10 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ItemLoader {
-    private DatabaseConnector databaseConnector;
 
-    public ItemLoader(DatabaseConnector databaseConnector) {
-        this.databaseConnector = databaseConnector;
+    public ItemLoader() {
     }
 
     public List<Item> loadAircrafts() {
@@ -27,7 +25,7 @@ public class ItemLoader {
 
     private List<Item> loadData(String query, DataItem factory) {
         List<Item> items = new ArrayList<>();
-        try (Connection connection = databaseConnector.getConnection();
+        try (Connection connection = DatabaseConnector.getInstance().getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query);
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {

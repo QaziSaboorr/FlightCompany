@@ -13,14 +13,12 @@ public class ManageAircraftFrame extends JFrame {
     private JComboBox<String> aircraftDropdown;
     private JButton addButton;
     private JButton removeButton;
-    private DatabaseConnector databaseConnector;
 
     private ManageController manageController;
 
-    public ManageAircraftFrame(DatabaseConnector databaseConnector) {
-        this.databaseConnector = databaseConnector;
+    public ManageAircraftFrame() {
 
-        this.manageController = new ManageController(databaseConnector);
+        this.manageController = new ManageController();
 
         setTitle("Flight Reservation - Manage Aircraft");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -74,7 +72,7 @@ private void addAircraft() {
     );
 
     if (confirmation == JOptionPane.YES_OPTION) {
-        try (Connection connection = databaseConnector.getConnection()) {
+        try (Connection connection = DatabaseConnector.getInstance().getConnection()) {
             String query = "INSERT INTO Aircrafts (AircraftNumber) VALUES (?)";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, aircraftNumber);
@@ -100,17 +98,16 @@ private void removeAircraft() {
             return;
         }
 
-        int confirmation = JOptionPane.showConfirmDialog(
-                this,
-                "Are you sure you want to remove all aircrafts of model '" + selectedAircraftModel + "' and their associated flights?",
-                "Confirm Removal",
-                JOptionPane.YES_NO_OPTION
-        );
+        // int confirmation = JOptionPane.showConfirmDialog(
+        //         this,
+        //         "Are you sure you want to remove all aircrafts of model '" + selectedAircraftModel + "' and their associated flights?",
+        //         "Confirm Removal",
+        //         JOptionPane.YES_NO_OPTION
+        // );
 
         Connection connection = null;
         try {
-            connection = databaseConnector.getConnection();
-            // Start a transaction
+            connection = DatabaseConnector.getInstance().getConnection();
             connection.setAutoCommit(false);
 
             // Retrieve all AircraftIDs for the selected aircraft model

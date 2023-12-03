@@ -7,8 +7,8 @@ public class FlightListFrame extends JFrame implements ListLoader, Printer {
     private JTextArea flightListArea;
     private ItemLoader itemLoader;
 
-    public FlightListFrame(DatabaseConnector databaseConnector) {
-        this.itemLoader = new ItemLoader(databaseConnector);
+    public FlightListFrame() {
+        this.itemLoader = new ItemLoader();
 
         setTitle("Flight Reservation - Flight List");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -31,13 +31,15 @@ public class FlightListFrame extends JFrame implements ListLoader, Printer {
         // Load and display the list of flights
         loadList();
     }
-
+    
+    // Overrided function to get the Flight List
     @Override
     public void loadList() {
         List<Item> flightList = itemLoader.loadFlights();
         displayItems(flightList);
     }
 
+    // Overrided function to display the Item (Flight)
     @Override
     public void displayItems(List<Item> items) {
         StringBuilder itemText = new StringBuilder();

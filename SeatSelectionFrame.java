@@ -1,8 +1,5 @@
 
 import javax.swing.*;
-
-
-
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,13 +11,11 @@ import java.util.Set;
 public class SeatSelectionFrame extends JFrame {
     private String selectedFlight;
     private UserType userType;
-    private DatabaseConnector databaseConnector;
-    private String selectedSeat; // Add this variable
+    private String selectedSeat;
 
-    public SeatSelectionFrame(String selectedFlight, UserType userType, DatabaseConnector databaseConnector) {
+    public SeatSelectionFrame(String selectedFlight, UserType userType) {
         this.selectedFlight = selectedFlight;
         this.userType = userType;
-        this.databaseConnector = databaseConnector;
         this.selectedSeat = null;
 
         setTitle("Flight Reservation - Seat Selection");
@@ -40,7 +35,7 @@ public class SeatSelectionFrame extends JFrame {
 
         try {
             // Use the shared database connector
-            try (Connection connection = databaseConnector.getConnection()) {
+            try (Connection connection = DatabaseConnector.getInstance().getConnection()) {
                 // Query to get the flight ID from the flight number
                 String flightIdQuery = "SELECT FlightID FROM Flights WHERE FlightNumber = ?";
                 try (PreparedStatement flightIdStatement = connection.prepareStatement(flightIdQuery)) {
@@ -125,9 +120,8 @@ public class SeatSelectionFrame extends JFrame {
         boolean insuranceSelected = (option == JOptionPane.YES_OPTION);
         this.selectedSeat = seatNumber;
         // Open TicketConfirmationFrame with relevant information
-        new TicketConfirmationFrame(userType, selectedFlight, seatNumber, seatType, seatPrice, insuranceSelected, databaseConnector).setVisible(true);
+        new TicketConfirmationFrame(userType, selectedFlight, seatNumber, seatType, seatPrice, insuranceSelected).setVisible(true);
     
-        // Dispose of the current frame
         this.dispose();
     }
     
@@ -136,8 +130,6 @@ public class SeatSelectionFrame extends JFrame {
     }
 
     private double calculateTicketPrice(String seatType) {
-        // Add your pricing logic based on seat type
-        // Adjust this method accordingly
         double basePrice = 100.0; // Default base price
         switch (seatType) {
             case "Regular":

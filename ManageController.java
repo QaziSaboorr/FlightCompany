@@ -10,11 +10,10 @@ public class ManageController {
     
     private DatabaseConnector databaseConnector;
 
-    public ManageController(DatabaseConnector databaseConnector) {
-        this.databaseConnector = databaseConnector;
+    public ManageController() {
+        this.databaseConnector = DatabaseConnector.getInstance();
     }
 
-    //ManangeAircraft
     public void loadAircraftAndFlights(JComboBox<String> dropdown) {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT a.AircraftNumber, f.FlightNumber " +
@@ -35,8 +34,7 @@ public class ManageController {
         }
     }
 
-    // MangeCrew
-        // Function to load crews and their associated flights into the dropdown menu
+    // Function to load crews and their flights into the dropdown menu
     public void loadCrewsAndFlights(JComboBox<String> dropdown) {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "SELECT c.CrewID, c.Name, f.FlightNumber " +
@@ -57,7 +55,6 @@ public class ManageController {
         }
     }
 
-    // ManageCrew
     // Function to load flight numbers into the combo box
     public void loadFlightNumbers(JComboBox<String> flightComboBox) {
         try (Connection connection = databaseConnector.getConnection()) {
@@ -75,8 +72,7 @@ public class ManageController {
         }
     }
 
-    // ManagewCrew
-        // Function to get the FlightID for a given flight number
+    // Function to get the FlightID for a given flight number
     public int getFlightID(Connection connection, String flightNumber) throws SQLException {
         String query = "SELECT FlightID FROM Flights WHERE FlightNumber = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -90,5 +86,60 @@ public class ManageController {
         return -1; // Return -1 if FlightID is not found
     }
 
+
+    // Function to load destination names into the combo box
+    public void loadDestinationNames(JComboBox<String> destinationComboBox) {
+        try (Connection connection = databaseConnector.getConnection()) {
+            String query = "SELECT DestinationName FROM Destinations";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    String destinationName = resultSet.getString("DestinationName");
+                    destinationComboBox.addItem(destinationName);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(destinationComboBox, this, "Error loading destination names.", 0);
+        }
+    }
+
+    // Function to load aircraft numbers into the combo box
+    public void loadAircraftNumbers(JComboBox<String> aircraftComboBox) {
+        try (Connection connection = databaseConnector.getConnection()) {
+            String query = "SELECT AircraftNumber FROM Aircrafts";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    String aircraftNumber = resultSet.getString("AircraftNumber");
+                    aircraftComboBox.addItem(aircraftNumber);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(aircraftComboBox, this, "Error loading aircraft numbers.", 0);
+        }
+    }
+
+    public void removeFlight(String flightNumber) {
+        try (Connection connection = databaseConnector.getConnection()) {
+            // Update the flight information in the Flights table and set the entire row to null
+            String query = "UPDATE Flights SET FlightNumber = null, Origin = null, Destination = null, AircraftID = 0 WHERE FlightNumber = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, flightNumber);
+                int rowsUpdated = preparedStatement.executeUpdate();
+    
+                if (rowsUpdated > 0) {
+                    JOptionPane.showMessageDialog(null, this, "Flight information removed successfully.", rowsUpdated, null);
+                } else {
+                    JOptionPane.showMessageDialog(null, this, "Flight not found with the given flight number.", rowsUpdated);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, this, "Error removing flight information.", 0);
+        }
+    }
+    
 
 }

@@ -3,10 +3,7 @@ import javax.swing.*;
 
 public class SystemAdminFrame extends JFrame {
 
-    private DatabaseConnector databaseConnector;
-
-    public SystemAdminFrame(DatabaseConnector databaseConnector) {
-        this.databaseConnector = databaseConnector;
+    public SystemAdminFrame() {
 
         setTitle("Flight Reservation - System Admin");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -47,42 +44,42 @@ public class SystemAdminFrame extends JFrame {
 
     private void browseFlights() {
         // Open the FlightListFrame
-        new FlightListFrame(databaseConnector).setVisible(true);
+        new FlightListFrame().setVisible(true);
     }
 
     private void browseCrews() {
         // Open the CrewListFrame
-        new CrewListFrame(databaseConnector).setVisible(true);
+        new CrewListFrame().setVisible(true);
     }
 
     private void browseAircrafts() {
         // Open the AircraftListFrame
-        new AircraftListFrame(databaseConnector).setVisible(true);
+        new AircraftListFrame().setVisible(true);
     }
 
     private void addRemoveCrew() {
         // Open the ManageCrewFrame
-        new ManageCrewFrame(databaseConnector).setVisible(true);
+        new ManageCrewFrame().setVisible(true);
     }
 
     private void addRemoveAircraft() {
         // Open the ManageAircraftFrame
-        new ManageAircraftFrame(databaseConnector).setVisible(true);
+        new ManageAircraftFrame().setVisible(true);
     }
 
     private void addRemoveDestinations() {
         // Open the ManageDestinationFrame
-        new ManageDestinationsFrame(databaseConnector).setVisible(true);
+        new ManageDestinationsFrame().setVisible(true);
     }
 
     private void modifyFlightsInfo() {
         // Open the ManageFlightsFrame
-        new ManageFlightsFrame(databaseConnector).setVisible(true);
+        new ManageFlightsFrame().setVisible(true);
     }
 
     private void printUsersList() {
         // Open a frame or perform actions to print the list of users
-        new UserListFrame(databaseConnector).setVisible(true);
+        new UserListFrame().setVisible(true);
     }
 
  
